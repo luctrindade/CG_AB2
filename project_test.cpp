@@ -15,7 +15,8 @@ float dirY = 0.0f;
 float gavetaX = .0f;
 bool gavetaAberta = false;
 bool primeiroMouse = true;
-bool luzLigada = true;
+bool luzLampada = true;
+bool luzAbajur = true;
 void capturaMouse(int x, int y) {
     if (primeiroMouse) {
         // No primeiro movimento, apenas guarda onde o mouse apareceu
@@ -87,7 +88,7 @@ void teclado(unsigned char key, int x_mouse, int y_mouse){
             break;
         }
         case 'e':{
-            float distGaveta = sqrt(pow(camX - 6.0f, 2) + pow(camZ - (-2.0f), 2));
+            float distGaveta = sqrt(pow(camX - (-4.0f), 2) + pow(camZ - (-3.0f), 2));
             if (distGaveta < 3.0f) { 
                 gavetaAberta = !gavetaAberta;
                 gavetaX = gavetaAberta ? 1.0f : 0.0f; // puxar 1 unidade p fora
@@ -95,9 +96,19 @@ void teclado(unsigned char key, int x_mouse, int y_mouse){
             break;
         }
         case 'f':{
-            luzLigada = !luzLigada;
-            if(luzLigada) glEnable(GL_LIGHT0);
-            else glDisable(GL_LIGHT0);
+            float distLampada = sqrt(pow(camX - (-4.0f), 2) + pow(camZ - (-3.0f), 2));
+            
+            if (distLampada < 3.0f) {
+                // Se estiver perto, controla o abajur
+                luzAbajur = !luzAbajur;
+                if(luzAbajur) glEnable(GL_LIGHT1);
+                else glDisable(GL_LIGHT1);
+            } else {
+                // Se estiver longe, controla a luz do teto
+                luzLampada = !luzLampada;
+                if(luzLampada) glEnable(GL_LIGHT0);
+                else glDisable(GL_LIGHT0);
+            }
             break;
         }
 
@@ -115,10 +126,63 @@ void reshape(int w, int h){
     gluPerspective(45.0,(float)w/(float)h,.1,100.0);
     glMatrixMode(GL_MODELVIEW);
 }
+
+void desenhaJanela() {
+    glPushMatrix();
+        //proximo a parede
+        glTranslatef(4.0f, 3.5f, -7.9f);
+
+        //vidro janela
+        glPushMatrix();
+            glColor3f(0.5f, 0.7f, 0.9f); // Azul claro
+            glScalef(3.0f, 2.0f, 0.05f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+
+        //moldura topo
+        glColor3f(0.9f, 0.9f, 0.9f);
+        glPushMatrix();
+            glTranslatef(0.0f, 1.0f, 0.0f);
+            glScalef(3.2f, 0.1f, 0.1f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+        glPushMatrix();
+            glTranslatef(0.0f, -1.0f, 0.0f);
+            glScalef(3.2f, 0.1f, 0.1f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+
+        //moldura laterais 
+        glPushMatrix();
+            glTranslatef(-1.55f, 0.0f, 0.0f);
+            glScalef(0.1f, 2.0f, 0.1f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+        glPushMatrix();
+            glTranslatef(1.55f, 0.0f, 0.0f);
+            glScalef(0.1f, 2.0f, 0.1f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+
+        //cortinas laterais  
+        glColor3f(0.8f, 0.7f, 0.5f); // Bege / Creme
+        glPushMatrix();
+            glTranslatef(-1.8f, 0.0f, 0.1f);
+            glScalef(0.8f, 2.5f, 0.1f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+        glPushMatrix();
+            glTranslatef(1.8f, 0.0f, 0.1f);
+            glScalef(0.8f, 2.5f, 0.1f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+
+    glPopMatrix();
+}
 void desenhaCamaEMovel(){
     // CAMA
     glPushMatrix();
-        glTranslatef(6.0f, 0.0f, 3.0f);
+        glTranslatef(5.5f, 0.0f, -1.0f);
         
         // base da cama
         glPushMatrix();
@@ -139,7 +203,7 @@ void desenhaCamaEMovel(){
         // travesseiro
         glPushMatrix(); // 
             glTranslatef(0.0f, 1.3f, -2.0f); 
-            glRotatef(15.0f, 1.0f, 0.0f, 0.0f); 
+            glRotatef(15.0f, 1.0f, 0.0f, 0.0f);
             glColor3f(1.0f, 1.0f, 1.0f);
             glScalef(1.5f, 0.2f, 1.0f);
             glutSolidCube(1.0f);
@@ -148,7 +212,8 @@ void desenhaCamaEMovel(){
 
     //movel 
     glPushMatrix(); // matriz separada da cama
-        glTranslatef(6.0f, 0.0f, -2.0f); 
+        glTranslatef(-4.0f, 0.0f, -3.0f); // lado esquerdo da mesa
+        glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
         
         // corpo
         glPushMatrix();
@@ -206,7 +271,57 @@ void desenhaCamaEMovel(){
             glPopMatrix();
         glPopMatrix(); // Fecha gaveta
 
-    glPopMatrix(); // 
+        //abajur encima do movel
+        glPushMatrix();
+            glTranslatef(0.0f, 2.0f, 0.0f); 
+            
+            //base
+            glPushMatrix();
+                glColor3f(0.3f, 0.3f, 0.3f); 
+                glScalef(0.4f, 0.05f, 0.4f);
+                glutSolidCube(1.0f);
+            glPopMatrix();
+
+            //haste
+            glPushMatrix();
+                glTranslatef(0.0f, 0.4f, 0.0f);
+                glColor3f(0.7f, 0.6f, 0.2f); 
+                glScalef(0.05f, 0.8f, 0.05f);
+                glutSolidCube(1.0f);
+            glPopMatrix();
+
+            glPushMatrix();
+                glTranslatef(0.0f, 0.65f, 0.0f); // dentro da cupula
+                
+                // Define que a luz GL_LIGHT0 nasce exatamente desta coordenada
+                float posLuzAbajur[] = {0.0f, 0.0f, 0.0f, 1.0f};
+                glLightfv(GL_LIGHT1, GL_POSITION, posLuzAbajur);
+
+                // brilho lampada
+                if (luzLampada) {
+                    float emissao[] = {0.8f, 0.8f, 0.5f, 1.0f}; // Amarelo brilhante
+                    glMaterialfv(GL_FRONT, GL_EMISSION, emissao);
+                }
+                
+                glColor3f(1.0f, 1.0f, 0.8f); // Cor base da lâmpada
+                glutSolidSphere(0.08, 10, 10); // Desenha a bolinha
+                
+                // desliga emissao nao afeta cor objetos
+                float semEmissao[] = {0.0f, 0.0f, 0.0f, 1.0f};
+                glMaterialfv(GL_FRONT, GL_EMISSION, semEmissao);
+            glPopMatrix();
+
+            //cupula 
+            glPushMatrix();
+                glTranslatef(0.0f, 0.5f, 0.0f);
+                glColor3f(0.9f, 0.9f, 0.4f); // Amarelo
+                glRotatef(-90.0f, 1.0f, 0.0f, 0.0f); 
+                GLUquadric* quadAbajur = gluNewQuadric();
+                gluCylinder(quadAbajur, 0.4, 0.15, 0.5, 16, 16);
+                gluDeleteQuadric(quadAbajur);
+            glPopMatrix();
+        glPopMatrix();
+    glPopMatrix(); 
 }
 
 void desenhaCadeira(){
@@ -323,17 +438,18 @@ void desenhaAcessorio(){
         glPopMatrix();
     glPopMatrix();
 
-    //caenca;
+    //caneca;
     glPushMatrix();
         glTranslatef(-1.0f, 2.1f, -1.5f); 
         glColor3f(0.8f, 0.1f, 0.1f); 
-        
-        // O cilindro do GLU nasce apontando para o eixo Z positivo.
-        // Rotacionamos -90 graus no eixo X para ele apontar para cima (Y positivo).
         glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
         GLUquadric* quad = gluNewQuadric();
-        // Parâmetros: quad, raio da base, raio do topo, altura, fatias (suavidade), pilhas
+        
+        // Corpo da caneca
         gluCylinder(quad, 0.15, 0.15, 0.3, 16, 16); 
+        // Fundo da caneca 
+        gluDisk(quad, 0.0, 0.15, 16, 1); 
+        
         gluDeleteQuadric(quad);
     glPopMatrix();
 }
@@ -443,6 +559,7 @@ void display(){
     desenhaAcessorio();
     desenhaCadeira();
     desenhaCamaEMovel();
+    desenhaJanela();
     
     glutSwapBuffers();
 }
@@ -450,22 +567,31 @@ void display(){
 void init() {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glEnable(GL_DEPTH_TEST); 
-
+    glEnable(GL_NORMALIZE);
     //ativando iluminacao e cores
     glEnable(GL_LIGHTING);
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 
     //luz principal (0)
-    float luzAmbiente[] = {0.2f, 0.2f, 0.2f, 1.0f}; // luz fraca geral
-    float luzDifusa[]   = {0.8f, 0.8f, 0.8f, 1.0f}; // luz direta forte
-    float posicaoLuz[]  = {0.0f, 5.0f, 0.0f, 1.0f}; // posicao 
-
+    float luzAmbiente[] = {0.2f, 0.2f, 0.2f, 1.0f}; 
+    float luzDifusa[]   = {0.6f, 0.6f, 0.6f, 1.0f}; 
+    float posicaoLuz[]  = {0.0f, 5.0f, 0.0f, 1.0f}; 
     glLightfv(GL_LIGHT0, GL_AMBIENT, luzAmbiente);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, luzDifusa);
     glLightfv(GL_LIGHT0, GL_POSITION, posicaoLuz);
-    
-    glEnable(GL_LIGHT0); // liga a Luz 0 por padrao
+    glEnable(GL_LIGHT0); 
+
+    // Luz 1: Abajur (Amarelada)
+    float luzAmbiente1[] = {0.1f, 0.1f, 0.0f, 1.0f}; 
+    float luzDifusa1[]   = {0.8f, 0.8f, 0.3f, 1.0f}; 
+    glLightfv(GL_LIGHT1, GL_AMBIENT, luzAmbiente1);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, luzDifusa1);
+    glEnable(GL_LIGHT1);
+
+    glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 1.0f);
+    glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.05f);
+    glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.02f);
 }
 
 int main(int argc, char** argv){
