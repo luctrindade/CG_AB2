@@ -15,7 +15,7 @@ float dirY = 0.0f;
 float gavetaX = .0f;
 bool gavetaAberta = false;
 bool primeiroMouse = true;
-
+bool luzLigada = true;
 void capturaMouse(int x, int y) {
     if (primeiroMouse) {
         // No primeiro movimento, apenas guarda onde o mouse apareceu
@@ -94,6 +94,13 @@ void teclado(unsigned char key, int x_mouse, int y_mouse){
             }
             break;
         }
+        case 'f':{
+            luzLigada = !luzLigada;
+            if(luzLigada) glEnable(GL_LIGHT0);
+            else glDisable(GL_LIGHT0);
+            break;
+        }
+
         case 27: exit(0); break;
     }
     glutPostRedisplay();
@@ -397,29 +404,31 @@ void desenhaMesa(){
 
 }
 
-void desenhaSala(){
+void desenhaSala() {
     glBegin(GL_QUADS);
-        //chao
-        glColor3f(.4f,0.25f,0.15f);
-        glVertex3f(-8.0f,.0f,8.0f);
-        glVertex3f(8.0f,.0f,8.0f);
-        glVertex3f(8.0f,.0f,-8.0f);
-        glVertex3f(-8.0f,.0f,-8.0f);
+        // chao (Luz rebate para Cima: Y = 1)
+        glColor3f(0.4f, 0.25f, 0.15f);
+        glNormal3f(0.0f, 1.0f, 0.0f); 
+        glVertex3f(-8.0f, 0.0f,  8.0f);
+        glVertex3f( 8.0f, 0.0f,  8.0f);
+        glVertex3f( 8.0f, 0.0f, -8.0f);
+        glVertex3f(-8.0f, 0.0f, -8.0f);
 
-        //parede fundo
-        glColor3f(.5f,.5f,.5f);
+        // parede fundo (Luz rebate para Frente: Z = 1)
+        glColor3f(0.5f, 0.5f, 0.5f);
+        glNormal3f(0.0f, 0.0f, 1.0f); 
         glVertex3f(-8.0f, 0.0f, -8.0f);
         glVertex3f( 8.0f, 0.0f, -8.0f);
         glVertex3f( 8.0f, 6.0f, -8.0f);
         glVertex3f(-8.0f, 6.0f, -8.0f);
 
-        //lateral esquerda
+        // parede Lateral Esquerda (Luz rebate para Direita: X = 1)
         glColor3f(0.45f, 0.45f, 0.45f);
+        glNormal3f(1.0f, 0.0f, 0.0f); 
         glVertex3f(-8.0f, 0.0f,  8.0f);
         glVertex3f(-8.0f, 0.0f, -8.0f);
         glVertex3f(-8.0f, 6.0f, -8.0f);
         glVertex3f(-8.0f, 6.0f,  8.0f);
-    
     glEnd();
 }
 
@@ -438,11 +447,25 @@ void display(){
     glutSwapBuffers();
 }
 
-void init(){
-    glClearColor(0.1f,0.1f,0.1f,1.0f);
-    glEnable(GL_DEPTH_TEST); // Render 3d
+void init() {
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glEnable(GL_DEPTH_TEST); 
+
+    //ativando iluminacao e cores
+    glEnable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+
+    //luz principal (0)
+    float luzAmbiente[] = {0.2f, 0.2f, 0.2f, 1.0f}; // luz fraca geral
+    float luzDifusa[]   = {0.8f, 0.8f, 0.8f, 1.0f}; // luz direta forte
+    float posicaoLuz[]  = {0.0f, 5.0f, 0.0f, 1.0f}; // posicao 
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT, luzAmbiente);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, luzDifusa);
+    glLightfv(GL_LIGHT0, GL_POSITION, posicaoLuz);
     
-    
+    glEnable(GL_LIGHT0); // liga a Luz 0 por padrao
 }
 
 int main(int argc, char** argv){
