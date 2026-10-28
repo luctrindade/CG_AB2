@@ -1,7 +1,7 @@
 #include <GL/glut.h>
 #include <ctype.h>
 #include <math.h>
-float camX = .0f, camY = 3.0f, camZ= 12.0f;
+float camX = .0f, camY = 3.0f, camZ= 16.0f;
 //vetor de direção do personagem
 float dirX = 0.0f, dirZ = -1.0f;
 //angulo de rotação
@@ -16,7 +16,9 @@ float gavetaX = .0f;
 bool gavetaAberta = false;
 bool primeiroMouse = true;
 bool luzLampada = true;
-bool luzAbajur = true;
+bool luzAbajur = false;
+bool portaAberta = false;
+float anguloPorta = .0f;
 
 bool cortinaAberta = false;
 float cortinaDeslocamento = 0.0f;
@@ -91,11 +93,20 @@ void teclado(unsigned char key, int x_mouse, int y_mouse){
             }
             break;
         }
-        case 'e':{
+        case 'e': {
+            // 1. Tenta interagir com a Gaveta do Criado-mudo
             float distGaveta = sqrt(pow(camX - (-4.0f), 2) + pow(camZ - (-3.0f), 2));
             if (distGaveta < 3.0f) { 
                 gavetaAberta = !gavetaAberta;
-                gavetaX = gavetaAberta ? 1.0f : 0.0f; // puxar 1 unidade p fora
+                gavetaX = gavetaAberta ? 1.0f : 0.0f; 
+            }
+
+            // 2. Tenta interagir com a Porta
+            float distPorta = sqrt(pow(camX - (-5.5f), 2) + pow(camZ - 8.0f, 2));
+            if (distPorta < 4.0f) { 
+                portaAberta = !portaAberta;
+                // Abre positivo (90 graus) para empurrar a porta para DENTRO do quarto
+                anguloPorta = portaAberta ? 90.0f : 0.0f; 
             }
             break;
         }
@@ -137,6 +148,58 @@ void reshape(int w, int h){
     glLoadIdentity();
     gluPerspective(45.0,(float)w/(float)h,.1,100.0);
     glMatrixMode(GL_MODELVIEW);
+}
+
+void desenhaPorta() {
+    glPushMatrix();
+        // Centraliza exatamente no buraco feito na parede
+        glTranslatef(-5.5f, 2.0f, 8.0f); 
+        
+        // Moldura/Batentes fixos
+        glColor3f(0.3f, 0.15f, 0.05f); 
+        glPushMatrix(); // Batente Esquerdo
+            glTranslatef(-1.05f, 0.0f, 0.0f);
+            glScalef(0.1f, 4.0f, 0.15f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+        glPushMatrix(); // Batente Direito
+            glTranslatef(1.05f, 0.0f, 0.0f);
+            glScalef(0.1f, 4.0f, 0.15f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+        glPushMatrix(); // Batente Superior
+            glTranslatef(0.0f, 2.05f, 0.0f);
+            glScalef(2.2f, 0.1f, 0.15f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+
+        // Dobradiça e Folha da Porta (Giram juntas)
+        glPushMatrix();
+            // Joga o eixo de rotação na dobradiça esquerda (-1.0f no X)
+            glTranslatef(-1.0f, 0.0f, 0.0f);
+            glRotatef(anguloPorta, 0.0f, 1.0f, 0.0f);
+            glTranslatef(1.0f, 0.0f, 0.0f); // Volta o desenho para o centro
+
+            // Folha da porta
+            glPushMatrix();
+                glColor3f(0.4f, 0.2f, 0.1f); 
+                glScalef(2.0f, 4.0f, 0.05f);
+                glutSolidCube(1.0f);
+            glPopMatrix();
+
+            // Maçanetas
+            glColor3f(0.8f, 0.8f, 0.2f); 
+            glPushMatrix();
+                glTranslatef(0.8f, 0.0f, 0.05f); // Lado de fora
+                glutSolidSphere(0.08, 10, 10);
+            glPopMatrix();
+            glPushMatrix();
+                glTranslatef(0.8f, 0.0f, -0.05f); // Lado de dentro
+                glutSolidSphere(0.08, 10, 10);
+            glPopMatrix();
+            
+        glPopMatrix();
+    glPopMatrix();
 }
 
 void desenhaQuadro() {
@@ -742,7 +805,8 @@ void desenhaMesa(){
 
 void desenhaSala() {
     glBegin(GL_QUADS);
-        // chao (Luz rebate para Cima: Y = 1)
+
+        // 1. CHÃO (Sem subdivisão - 1 grande quadrado)
         glColor3f(0.4f, 0.25f, 0.15f);
         glNormal3f(0.0f, 1.0f, 0.0f); 
         glVertex3f(-8.0f, 0.0f,  8.0f);
@@ -750,7 +814,7 @@ void desenhaSala() {
         glVertex3f( 8.0f, 0.0f, -8.0f);
         glVertex3f(-8.0f, 0.0f, -8.0f);
 
-        // parede fundo (Luz rebate para Frente: Z = 1)
+        // 2. PAREDE DA FRENTE (Janela/Mesa, Z = -8.0f)
         glColor3f(0.5f, 0.5f, 0.5f);
         glNormal3f(0.0f, 0.0f, 1.0f); 
         glVertex3f(-8.0f, 0.0f, -8.0f);
@@ -758,13 +822,56 @@ void desenhaSala() {
         glVertex3f( 8.0f, 6.0f, -8.0f);
         glVertex3f(-8.0f, 6.0f, -8.0f);
 
-        // parede Lateral Esquerda (Luz rebate para Direita: X = 1)
+        // 3. PAREDE LATERAL ESQUERDA (X = -8.0f)
         glColor3f(0.45f, 0.45f, 0.45f);
         glNormal3f(1.0f, 0.0f, 0.0f); 
         glVertex3f(-8.0f, 0.0f,  8.0f);
         glVertex3f(-8.0f, 0.0f, -8.0f);
         glVertex3f(-8.0f, 6.0f, -8.0f);
         glVertex3f(-8.0f, 6.0f,  8.0f);
+
+        // 4. PAREDE LATERAL DIREITA (X = 8.0f)
+        glColor3f(0.45f, 0.45f, 0.45f);
+        glNormal3f(-1.0f, 0.0f, 0.0f); 
+        glVertex3f(8.0f, 0.0f, -8.0f);
+        glVertex3f(8.0f, 0.0f,  8.0f);
+        glVertex3f(8.0f, 6.0f,  8.0f);
+        glVertex3f(8.0f, 6.0f, -8.0f);
+
+        // 5. PAREDE DE TRÁS (Com vão da porta em -5.5f, Z = 8.0f)
+        glColor3f(0.5f, 0.5f, 0.5f);
+        glNormal3f(0.0f, 0.0f, -1.0f);
+        
+        // Bloco à esquerda da porta (X: -8.0 até -6.5)
+        glVertex3f(-8.0f, 0.0f, 8.0f);
+        glVertex3f(-6.5f, 0.0f, 8.0f);
+        glVertex3f(-6.5f, 6.0f, 8.0f);
+        glVertex3f(-8.0f, 6.0f, 8.0f);
+
+        // Bloco acima da porta (X: -6.5 até -4.5 | Y: 4.0 até 6.0)
+        glVertex3f(-6.5f, 4.0f, 8.0f);
+        glVertex3f(-4.5f, 4.0f, 8.0f);
+        glVertex3f(-4.5f, 6.0f, 8.0f);
+        glVertex3f(-6.5f, 6.0f, 8.0f);
+
+        // Bloco à direita da porta (X: -4.5 até 8.0)
+        glVertex3f(-4.5f, 0.0f, 8.0f);
+        glVertex3f( 8.0f, 0.0f, 8.0f);
+        glVertex3f( 8.0f, 6.0f, 8.0f);
+        glVertex3f(-4.5f, 6.0f, 8.0f);
+
+        // 6. TETO SUBDIVIDIDO (Onde está a luz principal)
+        glColor3f(0.8f, 0.8f, 0.8f);
+        glNormal3f(0.0f, -1.0f, 0.0f);
+        for(float x = -8.0f; x < 8.0f; x += 1.0f) {
+            for(float z = -8.0f; z < 8.0f; z += 1.0f) {
+                glVertex3f(x, 6.0f, z);
+                glVertex3f(x + 1.0f, 6.0f, z);
+                glVertex3f(x + 1.0f, 6.0f, z + 1.0f);
+                glVertex3f(x, 6.0f, z + 1.0f);
+            }
+        }
+
     glEnd();
 }
 /*
@@ -826,6 +933,7 @@ void display(){
     desenhaJanela();
     desenhaEstante();
     desenhaQuadro();
+    desenhaPorta();
     
     glutSwapBuffers();
 }
@@ -855,7 +963,7 @@ void init() {
     glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 1.0f);
     glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.05f);
     glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.01f);
-    glEnable(GL_LIGHT1);
+    //glEnable(GL_LIGHT1);
     
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
