@@ -1,7 +1,7 @@
 #include <GL/glut.h>
 #include <ctype.h>
 #include <math.h>
-float camX = .0f, camY = 3.0f, camZ= 16.0f;
+float camX = .0f, camY = 3.0f, camZ= 6.0f;
 //vetor de direção do personagem
 float dirX = 0.0f, dirZ = -1.0f;
 //angulo de rotação
@@ -14,46 +14,47 @@ float dirY = 0.0f;
 
 float gavetaX = .0f;
 bool gavetaAberta = false;
+bool mousePressionado = false;
 bool primeiroMouse = true;
 bool luzLampada = true;
 bool luzAbajur = false;
 bool portaAberta = false;
 float anguloPorta = .0f;
+bool tvLigada = false;
+bool monitorLigado = false;
+
+GLuint texTV;
 
 bool cortinaAberta = false;
 float cortinaDeslocamento = 0.0f;
-
-void capturaMouse(int x, int y) {
-    if (primeiroMouse) {
-        // No primeiro movimento, apenas guarda onde o mouse apareceu
-        ultimoMouseX = x;
-        ultimoMouseY = y;
-        primeiroMouse = false;
-        return;
+void gerenciaMouse(int button, int state, int x, int y) {
+    if (button == GLUT_LEFT_BUTTON) {
+        if (state == GLUT_DOWN) {
+            mousePressionado = true;
+            ultimoMouseX = x; // Grava onde o clique começou
+            ultimoMouseY = y;
+        } else if (state == GLUT_UP) {
+            mousePressionado = false; // Soltou o clique, trava a câmera
+        }
     }
+}
 
-    // Calcula apenas a diferença (delta) de onde o mouse estava para onde ele foi
+void movimentoMouse(int x, int y) {
+    if (!mousePressionado) return; // Só move a câmera se estiver segurando o clique
+
     float deltaX = x - ultimoMouseX;
     float deltaY = y - ultimoMouseY;
 
-    // Atualiza a posição para o próximo frame
     ultimoMouseX = x;
     ultimoMouseY = y;
 
     float sensibilidade = 0.005f; 
-    
-    // Se a esquerda/direita continuar invertida para o seu gosto, 
-    // troque o '+=' por '-=' nesta linha do angulo:
     angulo += deltaX * sensibilidade; 
-    
-    // Se o cima/baixo estiver invertido, troque o '-=' por '+=' aqui:
     pitch -= deltaY * sensibilidade;  
 
-    // Limites de rotação do pescoço
     if (pitch > 1.5f) pitch = 1.5f;
     if (pitch < -1.5f) pitch = -1.5f;
 
-    // Atualização dos vetores 3D
     dirX = cos(pitch) * cos(angulo);
     dirY = sin(pitch);
     dirZ = cos(pitch) * sin(angulo);
@@ -73,29 +74,23 @@ void teclado(unsigned char key, int x_mouse, int y_mouse){
             camZ -= dirZ * velocidade; 
             break;
         case 'd': 
-            //angulo -= giro; 
-            //dirX = cos(angulo); 
-            //dirZ = sin(angulo);
             camX -= dirZ * velocidade; 
             camZ += dirX * velocidade;
             break;
         case 'a': 
-            //angulo += giro; 
-            //dirX = cos(angulo); 
-            // dirZ = sin(angulo); 
             camX += dirZ * velocidade; 
             camZ -= dirX * velocidade;
             break;
         case 'r':{
-            float dist = sqrt(pow(camX - 0.0f, 2) + pow(camZ - (-0.5f), 2));
+            float dist = sqrt(pow(camX - 0.0f, 2) + pow(camZ - (-4.0f), 2));
             if(dist<2.5f){
                 anguloCadeira += 15.0f;
             }
             break;
         }
         case 'e': {
-            // 1. Tenta interagir com a Gaveta do Criado-mudo
-            float distGaveta = sqrt(pow(camX - (-4.0f), 2) + pow(camZ - (-3.0f), 2));
+            // 1. Tenta interagir com a Gaveta do movel
+            float distGaveta = sqrt(pow(camX - (3.0f), 2) + pow(camZ - (-6.0f), 2));
             if (distGaveta < 3.0f) { 
                 gavetaAberta = !gavetaAberta;
                 gavetaX = gavetaAberta ? 1.0f : 0.0f; 
@@ -105,13 +100,22 @@ void teclado(unsigned char key, int x_mouse, int y_mouse){
             float distPorta = sqrt(pow(camX - (-5.5f), 2) + pow(camZ - 8.0f, 2));
             if (distPorta < 4.0f) { 
                 portaAberta = !portaAberta;
-                // Abre positivo (90 graus) para empurrar a porta para DENTRO do quarto
                 anguloPorta = portaAberta ? 90.0f : 0.0f; 
+            }
+            // 3. Tenta interagir com a TV
+            float distTV = sqrt(pow(camX + (-5.5f), 2) + pow(camZ - 7.0f, 2));
+            if (distTV < 4.0f) { 
+                tvLigada = !tvLigada;
+            }
+            // 4. Tenta interagir com o Monitor
+            float distMonitor = sqrt(pow(camX - 0.0f, 2) + pow(camZ - (-6.0f), 2));
+            if (distMonitor < 3.5f) { 
+                monitorLigado = !monitorLigado;
             }
             break;
         }
         case 'f':{
-            float distLampada = sqrt(pow(camX - (-4.0f), 2) + pow(camZ - (-3.0f), 2));
+            float distLampada = sqrt(pow(camX - (3.0f), 2) + pow(camZ - (-6.0f), 2));
             
             if (distLampada < 3.0f) {
                 // Se estiver perto, controla o abajur
@@ -150,13 +154,299 @@ void reshape(int w, int h){
     glMatrixMode(GL_MODELVIEW);
 }
 
+// Base: cor (ambiente+difusa via COLOR_MATERIAL), especular e brilho (0..128)
+void material(float r, float g, float b, float espec, float brilho) {
+    glColor3f(r, g, b);
+    float s[] = {espec, espec, espec, 1.0f};
+    glMaterialfv(GL_FRONT, GL_SPECULAR, s);
+    glMaterialf(GL_FRONT, GL_SHININESS, brilho);
+}
+
+// Presets
+void matMadeira (float r, float g, float b) { material(r, g, b, 0.15f, 12.0f); }  // brilho fraco e largo
+void matMetal   (float r, float g, float b) { material(r, g, b, 0.90f, 100.0f); } // brilho forte e fechado
+void matPlastico(float r, float g, float b) { material(r, g, b, 0.50f, 40.0f);  }
+void matCeramica(float r, float g, float b) { material(r, g, b, 0.70f, 70.0f);  }
+void matVidro   (float r, float g, float b) { material(r, g, b, 0.95f, 110.0f); }
+void matTecido  (float r, float g, float b) { material(r, g, b, 0.00f, 1.0f);   } // totalmente fosco
+void matParede  (float r, float g, float b) { material(r, g, b, 0.02f, 2.0f);   }
+
+void desenhaLampada(){
+    glPushMatrix();
+        // Posiciona no centro do quarto, encostada no teto
+        glTranslatef(0.0f, 6.0f, 0.0f); 
+
+        // 1. Fio/Cabo descendo do teto
+        matMetal(0.1f, 0.1f, 0.1f); 
+        glPushMatrix();
+            glTranslatef(0.0f, -0.4f, 0.0f); // Desce a metade do tamanho do fio
+            glScalef(0.02f, 0.45f, 0.02f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+
+        // 2. Lâmpada/Bulbo 
+        glPushMatrix();
+            glTranslatef(0.0f, -0.5f, 0.0f); 
+            
+            // Se a variável luzLampada for true, faz o material emitir luz branca
+            if (luzLampada) {
+                float emissaoBranca[] = {1.0f, 1.0f, 1.0f, 1.0f};
+                glMaterialfv(GL_FRONT, GL_EMISSION, emissaoBranca);
+                glColor3f(1.0f, 1.0f, 1.0f); // Cor branca para a lâmpada ligada
+            } else {
+                glColor3f(0.3f, 0.3f, 0.3f); // Cor cinza/opaca para a lâmpada desligada
+            }
+            
+            glutSolidSphere(0.15, 16, 16); 
+            
+            float semEmissao[] = {0.0f, 0.0f, 0.0f, 1.0f};
+            glMaterialfv(GL_FRONT, GL_EMISSION, semEmissao);
+        glPopMatrix();
+
+    glPopMatrix();
+}
+
+void desenhaArmario() {
+    glPushMatrix();
+        // Posicionado na parede da esquerda, mais próximo da porta 
+        glTranslatef(-7.2f, 0.0f, 3.0f);
+
+        // Corpo do Armário 
+        matMadeira(.4f,.25f,.15f);
+        //glColor3f(0.4f, 0.25f, 0.15f);
+        glPushMatrix();
+            glTranslatef(0.0f, 2.5f, 0.0f);
+            glScalef(1.5f, 5.0f, 3.0f); // 1.5m prof, 5m alt, 3m larg
+            glutSolidCube(1.0f);
+        glPopMatrix();
+
+        // Portas do Armário 
+        matMadeira(.45f,.3f,.2f);
+        //glColor3f(0.45f, 0.3f, 0.2f);
+        
+        // Porta Esquerda
+        glPushMatrix();
+            glTranslatef(0.76f, 2.5f, -0.75f);
+            glScalef(0.05f, 4.8f, 1.4f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+        
+        // Porta Direita
+        glPushMatrix();
+            glTranslatef(0.76f, 2.5f, 0.75f);
+            glScalef(0.05f, 4.8f, 1.4f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+
+        // Puxadores 
+        matMetal(0.7f, 0.7f, 0.7f);
+        //glColor3f(0.7f, 0.7f, 0.7f);
+        
+        // Puxador Esquerdo
+        glPushMatrix();
+            glTranslatef(0.8f, 2.5f, -0.1f);
+            glScalef(0.05f, 0.6f, 0.05f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+        
+        // Puxador Direito
+        glPushMatrix();
+            glTranslatef(0.8f, 2.5f, 0.1f);
+            glScalef(0.05f, 0.6f, 0.05f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+
+    glPopMatrix();
+}
+
+void desenhaQuadrosEsquerda() {
+    glPushMatrix();
+        // Encostados na parede da esquerda 
+        glTranslatef(-7.9f, 3.5f, -2.0f); 
+        // Gira 90 graus para colar na parede lateral
+        glRotatef(90.0f, 0.0f, 1.0f, 0.0f); 
+
+        // Função lambda/interna rápida para desenhar um quadro genérico
+        auto desenhaUmQuadro = []() {
+            // Tela Branca
+            glPushMatrix();
+                matTecido(0.9f, 0.9f, 0.9f);
+                glScalef(1.5f, 2.0f, 0.05f);
+                glutSolidCube(1.0f);
+            glPopMatrix();
+            // Moldura Escura
+            matMadeira(0.2f, 0.1f, 0.1f);
+            glPushMatrix(); glTranslatef(0.0f, 1.05f, 0.0f); glScalef(1.6f, 0.1f, 0.1f); glutSolidCube(1.0f); glPopMatrix();
+            glPushMatrix(); glTranslatef(0.0f, -1.05f, 0.0f); glScalef(1.6f, 0.1f, 0.1f); glutSolidCube(1.0f); glPopMatrix();
+            glPushMatrix(); glTranslatef(-0.75f, 0.0f, 0.0f); glScalef(0.1f, 2.0f, 0.1f); glutSolidCube(1.0f); glPopMatrix();
+            glPushMatrix(); glTranslatef(0.75f, 0.0f, 0.0f); glScalef(0.1f, 2.0f, 0.1f); glutSolidCube(1.0f); glPopMatrix();
+        };
+
+        // Quadro 1
+        glPushMatrix();
+            glTranslatef(-1.5f, 0.0f, 0.0f); 
+            desenhaUmQuadro();
+        glPopMatrix();
+
+        // Quadro 2 
+        glPushMatrix();
+            glTranslatef(1.5f, 0.5f, 0.0f); 
+            desenhaUmQuadro();
+        glPopMatrix();
+
+    glPopMatrix();
+}
+
+void desenhaRackETV() {
+    glPushMatrix();
+        // Posicionado na parede esquerda, de frente para a cama
+        glTranslatef(5.5f, 0.0f, 7.0f);
+        glRotatef(90.0f,.0f,1.0f,.0f);
+        glScalef(1.5f,1.5f,1.5f);
+        //  PÉS INCLINADOS 
+        matMadeira(0.7f, 0.5f, 0.3f);
+        // Traseiro Esquerdo
+        glPushMatrix();
+            glTranslatef(-0.2f, 0.15f, -1.3f);
+            glRotatef(15.0f, 1.0f, 0.0f, 0.0f);
+            glScalef(0.08f, 0.3f, 0.08f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+        // Traseiro Direito
+        glPushMatrix();
+            glTranslatef(-0.2f, 0.15f, 1.3f);
+            glRotatef(-15.0f, 1.0f, 0.0f, 0.0f);
+            glScalef(0.08f, 0.3f, 0.08f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+        // Dianteiro Esquerdo 
+        glPushMatrix();
+            glTranslatef(0.2f, 0.15f, -1.3f);
+            glRotatef(15.0f, 1.0f, 0.0f, 0.0f);
+            glScalef(0.08f, 0.3f, 0.08f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+        // Dianteiro Direito
+        glPushMatrix();
+            glTranslatef(0.2f, 0.15f, 1.3f);
+            glRotatef(-15.0f, 1.0f, 0.0f, 0.0f);
+            glScalef(0.08f, 0.3f, 0.08f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+
+        //  BASE DO RACK 
+        glPushMatrix();
+            glTranslatef(0.0f, 0.35f, 0.0f);
+            glScalef(0.7f, 0.1f, 2.9f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+
+        //  CORPO DO RACK 
+        glPushMatrix();
+            matMadeira(0.9f, 0.88f, 0.85f);
+            glTranslatef(0.0f, 0.8f, 0.0f); // Eleva acima dos pés e base
+            glScalef(0.7f, 0.8f, 2.8f); // Proporções do rack
+            glutSolidCube(1.0f);
+        glPopMatrix();
+
+        //  DETALHE SUPERIOR (Friso amadeirado sob o tampo)
+        glPushMatrix();
+            matMadeira(0.6f, 0.45f, 0.3f);
+            glTranslatef(0.01f, 1.15f, 0.0f);
+            glScalef(0.7f, 0.06f, 2.82f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+
+        //  FRONTAL DO RACK 
+        matMadeira(0.88f, 0.86f, 0.83f);
+        // Porta Esquerda
+        glPushMatrix();
+            glTranslatef(0.36f, 0.77f, -0.92f);
+            glScalef(0.02f, 0.7f, 0.9f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+        // Porta Central
+        glPushMatrix();
+            glTranslatef(0.36f, 0.77f, 0.0f);
+            glScalef(0.02f, 0.7f, 0.9f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+        // Porta Direita
+        glPushMatrix();
+            glTranslatef(0.36f, 0.77f, 0.92f);
+            glScalef(0.02f, 0.7f, 0.9f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+
+
+        //  TELEVISÃO 
+        glPushMatrix();
+            glTranslatef(0.0f, 1.2f, 0.0f);
+
+            // Base de apoio central (Preto)
+            matPlastico(0.12f, 0.12f, 0.12f);
+            glPushMatrix();
+                glTranslatef(0.0f, 0.02f, 0.0f);
+                glScalef(0.35f, 0.03f, 0.7f); // Apoio plano
+                glutSolidCube(1.0f);
+            glPopMatrix();
+
+            // Haste de conexão
+            glPushMatrix();
+                glTranslatef(0.0f, 0.15f, 0.0f);
+                glScalef(0.08f, 0.25f, 0.12f);
+                glutSolidCube(1.0f);
+            glPopMatrix();
+
+            // Painel da Tela 
+            glPushMatrix();
+                glTranslatef(0.0f, 0.75f, 0.0f);
+
+                // Moldura
+                matPlastico(0.05f, 0.05f, 0.05f);
+                glPushMatrix();
+                    glScalef(0.08f, 1.1f, 2.1f);
+                    glutSolidCube(1.0f);
+                glPopMatrix();
+
+                // Display/Vidro
+                if (!tvLigada) {
+                    // TV Desligada: Tela preta convencional
+                    matVidro(0.15f, 0.15f, 0.18f);
+                    glPushMatrix();
+                        glTranslatef(0.045f, 0.0f, 0.0f); 
+                        glScalef(0.01f, 1.02f, 2.02f);
+                        glutSolidCube(1.0f);
+                    glPopMatrix();
+                } else {
+                    // TV Ligada: Tela Azul 
+                    matVidro(0.8f, 0.9f, 1.0f);
+                    float emissaoTV[]  = {0.3f, 0.5f, 0.9f, 1.0f};
+                    glMaterialfv(GL_FRONT, GL_EMISSION, emissaoTV);
+
+                    glPushMatrix();
+                        glTranslatef(0.05f, 0.0f, 0.0f);
+                        glScalef(0.01f, 1.02f, 2.02f);
+                        glutSolidCube(1.0f);
+                    glPopMatrix();
+                    // desliga a emissão para não vazar para os próximos objetos
+                    float semEmissao[] = {0.0f, 0.0f, 0.0f, 1.0f};
+                    glMaterialfv(GL_FRONT, GL_EMISSION, semEmissao);
+                    
+                }
+            glPopMatrix();
+        glPopMatrix();
+
+    glPopMatrix();
+}
+
 void desenhaPorta() {
     glPushMatrix();
         // Centraliza exatamente no buraco feito na parede
         glTranslatef(-5.5f, 2.0f, 8.0f); 
         
         // Moldura/Batentes fixos
-        glColor3f(0.3f, 0.15f, 0.05f); 
+        matMadeira(.3f,.15f,.05f);
         glPushMatrix(); // Batente Esquerdo
             glTranslatef(-1.05f, 0.0f, 0.0f);
             glScalef(0.1f, 4.0f, 0.15f);
@@ -173,22 +463,22 @@ void desenhaPorta() {
             glutSolidCube(1.0f);
         glPopMatrix();
 
-        // Dobradiça e Folha da Porta (Giram juntas)
+        // Dobradiça e Folha da Porta 
         glPushMatrix();
-            // Joga o eixo de rotação na dobradiça esquerda (-1.0f no X)
+            // Joga o eixo de rotação na dobradiça esquerda 
             glTranslatef(-1.0f, 0.0f, 0.0f);
             glRotatef(anguloPorta, 0.0f, 1.0f, 0.0f);
             glTranslatef(1.0f, 0.0f, 0.0f); // Volta o desenho para o centro
 
             // Folha da porta
             glPushMatrix();
-                glColor3f(0.4f, 0.2f, 0.1f); 
+                matMadeira(.4f,.2f,.1f);
                 glScalef(2.0f, 4.0f, 0.05f);
                 glutSolidCube(1.0f);
             glPopMatrix();
 
             // Maçanetas
-            glColor3f(0.8f, 0.8f, 0.2f); 
+            matMetal(0.8f, 0.8f, 0.2f);
             glPushMatrix();
                 glTranslatef(0.8f, 0.0f, 0.05f); // Lado de fora
                 glutSolidSphere(0.08, 10, 10);
@@ -205,7 +495,7 @@ void desenhaPorta() {
 void desenhaQuadro() {
     glPushMatrix();
         // lateral esquerda
-        glTranslatef(-3.5f, 3.5f, -7.0f);
+        glTranslatef(-3.5f, 3.5f, -7.9f);
         
         glRotatef(90.0,.0f,1.0f,.0f);
 
@@ -250,9 +540,9 @@ void desenhaQuadro() {
 void desenhaEstante() {
     glPushMatrix();
         //parede esquerda
-        glTranslatef(-7.45f, 0.0f, 0.0f);
-        glRotatef(90.0,.0f,1.0f,.0f); 
-        glColor3f(0.5f, 0.3f, 0.15f); // Cor da madeira
+        glTranslatef(-6.45f, 0.0f, -7.45f);
+        //glRotatef(90.0,.0f,1.0f,.0f); 
+        matMadeira(0.5f, 0.3f, 0.15f);
 
         // Laterais
         glPushMatrix();
@@ -290,26 +580,30 @@ void desenhaEstante() {
         // Prateleira de baixo y = 1
         // Livros deitados 
         glPushMatrix();
-            glColor3f(0.8f, 0.5f, 0.1f);  //Laranja 
+            matTecido(0.8f,0.5f,0.1f);
+            //glColor3f(0.8f, 0.5f, 0.1f);  //Laranja 
             glTranslatef(0.5f, 1.1f, 0.0f);
             glScalef(0.6f, 0.15f, 0.8f);
             glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            glColor3f(0.2f, 0.6f, 0.6f); // Ciano escuro
+            matTecido(0.2f,0.6f,0.6f);
+            //glColor3f(0.2f, 0.6f, 0.6f); // Ciano escuro
             glTranslatef(0.5f, 1.25f, 0.0f);
             glScalef(0.55f, 0.15f, 0.75f);
             glutSolidCube(1.0f);
         glPopMatrix();
         // Livros em pe
         glPushMatrix();
-            glColor3f(0.5f, 0.1f, 0.5f); // Roxo
+            matTecido(.5f,.1f,.5f);
+            //glColor3f(0.5f, 0.1f, 0.5f); // Roxo
             glTranslatef(-0.6f, 1.3f, 0.0f);
             glScalef(0.15f, 0.6f, 0.7f);
             glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            glColor3f(0.9f, 0.8f, 0.1f); // Amarelo
+            matTecido(.9f,.8f,.1f);
+            //glColor3f(0.9f, 0.8f, 0.1f); // Amarelo
             glTranslatef(-0.4f, 1.3f, 0.0f);
             glScalef(0.2f, 0.55f, 0.7f);
             glutSolidCube(1.0f);
@@ -317,32 +611,37 @@ void desenhaEstante() {
 
         // prateleira do meio y =2 
         glPushMatrix();
-            glColor3f(0.8f, 0.1f, 0.1f); // Vermelho
+            matTecido(.8f,.1f,.1f);
+            //glColor3f(0.8f, 0.1f, 0.1f); // Vermelho
             glTranslatef(-0.5f, 2.3f, 0.0f);
             glScalef(0.2f, 0.5f, 0.7f);
             glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            glColor3f(0.1f, 0.2f, 0.8f); // Azul
+            matTecido(.1f,.2f,.8f);
+            //glColor3f(0.1f, 0.2f, 0.8f); // Azul
             glTranslatef(-0.2f, 2.3f, 0.0f);
             glScalef(0.15f, 0.5f, 0.7f);
             glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            glColor3f(0.1f, 0.7f, 0.2f); // Verde 
+            //glColor3f(0.1f, 0.7f, 0.2f); // Verde 
+            matTecido(.1f,.7f,.2f);
             glTranslatef(.01f, 2.3f, 0.0f);
             glRotatef(15.0f, 0.0f, 0.0f, 1.0f); // Inclinacao
             glScalef(0.15f, 0.5f, 0.7f);
             glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            glColor3f(0.4f, 0.4f, 0.4f); // Cinza
+            //glColor3f(0.4f, 0.4f, 0.4f); // Cinza
+            matTecido(.4f,.4f,.4f);
             glTranslatef(0.5f, 2.3f, 0.0f);
             glScalef(0.18f, 0.55f, 0.7f);
             glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            glColor3f(0.7f, 0.3f, 0.5f); // Rosa escuro
+            //glColor3f(0.7f, 0.3f, 0.5f); // Rosa escuro
+            matTecido(.7f,.3f,.5f);
             glTranslatef(0.7f, 2.3f, 0.0f);
             glScalef(0.15f, 0.5f, 0.7f);
             glutSolidCube(1.0f);
@@ -350,25 +649,29 @@ void desenhaEstante() {
 
         // prateleira de cima y = 3
         glPushMatrix();
-            glColor3f(0.1f, 0.1f, 0.5f); // Azul escuro
+            //glColor3f(0.1f, 0.1f, 0.5f); // Azul escuro
+            matTecido(.1f,.1f,.5f);
             glTranslatef(-0.7f, 3.25f, 0.0f);
             glScalef(0.12f, 0.45f, 0.6f);
             glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            glColor3f(0.1f, 0.1f, 0.5f); // Azul escuro
+            //lColor3f(0.1f, 0.1f, 0.5f); // Azul escuro
+            matTecido(.1f,.1f,.5f);
             glTranslatef(-0.55f, 3.25f, 0.0f);
             glScalef(0.12f, 0.45f, 0.6f);
             glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            glColor3f(0.6f, 0.1f, 0.2f); // Vinho
+            //glColor3f(0.6f, 0.1f, 0.2f); // Vinho
+            matTecido(.6f,.1f,.2f);
             glTranslatef(-0.4f, 3.25f, 0.0f);
             glScalef(0.15f, 0.45f, 0.65f);
             glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            glColor3f(0.3f, 0.5f, 0.2f); // Verde musgo (Inclinado)
+            //glColor3f(0.3f, 0.5f, 0.2f); // Verde musgo 
+            matTecido(.3f,.5f,.2f);
             glTranslatef(-0.17f, 3.2f, 0.0f);
             glRotatef(25.0f, 0.0f, 0.0f, 1.0f);
             glScalef(0.12f, 0.45f, 0.6f);
@@ -385,13 +688,13 @@ void desenhaJanela() {
 
         //vidro janela
         glPushMatrix();
-            glColor3f(0.5f, 0.7f, 0.9f); // Azul claro
+            matVidro(0.5f, 0.7f, 0.9f);
             glScalef(3.0f, 2.0f, 0.05f);
             glutSolidCube(1.0f);
         glPopMatrix();
 
         //moldura topo
-        glColor3f(0.9f, 0.9f, 0.9f);
+        matPlastico(0.9f, 0.9f, 0.9f);
         glPushMatrix();
             glTranslatef(0.0f, 1.0f, 0.0f);
             glScalef(3.2f, 0.1f, 0.1f);
@@ -417,11 +720,13 @@ void desenhaJanela() {
 
         //cortinas laterais  
         glColor4f(0.8f, 0.7f, 0.5f, 0.7f); 
-
+        float zero[] = {0, 0, 0, 1};
+        glMaterialfv(GL_FRONT, GL_SPECULAR, zero);
+        
         // Cortina Esquerda
         glPushMatrix();
             // Ponto âncora: canto esquerdo.
-            // Z = 0.2f joga a cortina bem para a frente do vidro.
+            // joga a cortina bem para a frente do vidro.
             glTranslatef(-1.6f, 0.0f, 0.1f);
             
             // Quando aberta, encolhe para 0.2. Quando fechada, cresce para 1.55 (metade da janela).
@@ -449,12 +754,12 @@ void desenhaJanela() {
 void desenhaCamaEMovel(){
     // CAMA
     glPushMatrix();
-        glTranslatef(5.5f, 0.0f, -1.0f);
+        glTranslatef(5.5f, 0.0f, -4.0f);
         
         // base da cama
         glPushMatrix();
             glTranslatef(0.0f, 0.4f, 0.0f);
-            glColor3f(0.5f, 0.3f, 0.2f);
+            matMadeira(0.5f, 0.3f, 0.2f);
             glScalef(3.0f, 0.8f, 6.0f);
             glutSolidCube(1.0f);
         glPopMatrix();
@@ -462,7 +767,7 @@ void desenhaCamaEMovel(){
         // colchao
         glPushMatrix();
             glTranslatef(0.0f, 1.0f, 0.0f);
-            glColor3f(0.3f, 0.4f, 0.7f);
+            matTecido(0.3f, 0.4f, 0.7f);
             glScalef(2.8f, 0.4f, 5.8f);
             glutSolidCube(1.0f);
         glPopMatrix();
@@ -471,7 +776,7 @@ void desenhaCamaEMovel(){
         glPushMatrix(); // 
             glTranslatef(0.0f, 1.3f, -2.0f); 
             glRotatef(15.0f, 1.0f, 0.0f, 0.0f);
-            glColor3f(1.0f, 1.0f, 1.0f);
+            matTecido(1, 1, 1);
             glScalef(1.5f, 0.2f, 1.0f);
             glutSolidCube(1.0f);
         glPopMatrix();
@@ -479,13 +784,13 @@ void desenhaCamaEMovel(){
 
     //movel 
     glPushMatrix(); // matriz separada da cama
-        glTranslatef(-4.0f, 0.0f, -2.0f); // lado esquerdo da mesa
+        glTranslatef(3.0f, 0.0f, -6.0f); // lado esquerdo da mesa
         glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
         
         // corpo
         glPushMatrix();
             glTranslatef(0.0f, 1.0f, 0.0f);
-            glColor3f(0.4f, 0.25f, 0.15f); 
+            matMadeira(.4f,.25f,.15f);
             glScalef(1.5f, 2.0f, 1.5f);
             glutSolidCube(1.0f);
         glPopMatrix();
@@ -493,49 +798,71 @@ void desenhaCamaEMovel(){
         // Gaveta interativa e puxador
         glPushMatrix();
             glTranslatef(-0.1f - gavetaX, 1.5f, 0.0f); 
-            glColor3f(0.45f, 0.3f, 0.2f); // Cor da madeira da gaveta
+            matMadeira(.4f,.25f,.15f);
             
-            // 1. Fundo (Base da gaveta)
+            //  Fundo (Base da gaveta)
             glPushMatrix();
                 glTranslatef(0.0f, -0.25f, 0.0f);
                 glScalef(1.5f, 0.1f, 1.4f);
                 glutSolidCube(1.0f);
             glPopMatrix();
 
-            // 2. Parede Frontal (onde fica o puxador)
+            //  Parede Frontal (onde fica o puxador)
             glPushMatrix();
                 glTranslatef(-0.7f, 0.0f, 0.0f);
                 glScalef(0.1f, 0.6f, 1.4f);
                 glutSolidCube(1.0f);
             glPopMatrix();
 
-            // 3. Parede Traseira
+            //  Parede Traseira
             glPushMatrix();
                 glTranslatef(0.7f, 0.0f, 0.0f);
                 glScalef(0.1f, 0.6f, 1.4f);
                 glutSolidCube(1.0f);
             glPopMatrix();
 
-            // 4. Parede Lateral Esquerda
+            //  Parede Lateral Esquerda
             glPushMatrix();
                 glTranslatef(0.0f, 0.0f, -0.65f);
                 glScalef(1.5f, 0.6f, 0.1f);
                 glutSolidCube(1.0f);
             glPopMatrix();
 
-            // 5. Parede Lateral Direita
+            //  Parede Lateral Direita
             glPushMatrix();
                 glTranslatef(0.0f, 0.0f, 0.65f);
                 glScalef(1.5f, 0.6f, 0.1f);
                 glutSolidCube(1.0f);
             glPopMatrix();
             
-            // Puxador (Bolinha preta) ajustado para a nova parede frontal
+            // Puxador  ajustado para a nova parede frontal
             glPushMatrix();
                 glTranslatef(-0.8f, 0.0f, 0.0f); 
-                glColor3f(0.1f, 0.1f, 0.1f);
+                matMetal(0.1f, 0.1f, 0.1f);
                 glutSolidSphere(0.1, 10, 10);
             glPopMatrix();
+
+            glPushMatrix();
+                // Posiciona o livro no centro da gaveta. 
+                glTranslatef(-0.3f, 0.15f, 0.0f); 
+                glRotatef(-90.0f,0.0f,1.0f,.0f);
+                // Capa Preta
+                matMetal(0.1f, 0.1f, 0.1f);
+                glPushMatrix();
+                    glScalef(0.4f, 0.1f, 0.5f); // Livro deitado
+                    glutSolidCube(1.0f);
+                glPopMatrix();
+                
+                // Folhas Brancas
+                glColor3f(0.9f, 0.9f, 0.9f);
+                glPushMatrix();
+                    // Desloca milimetricamente no eixo para as páginas saltarem da capa
+                    glTranslatef(0.02f, 0.0f, 0.0f); 
+                    glScalef(0.38f, 0.08f, 0.48f); // Levemente menor que a capa
+                    glutSolidCube(1.0f);
+                glPopMatrix();
+                
+            glPopMatrix(); // Fim do livro
         glPopMatrix(); // Fecha gaveta
 
         //abajur encima do movel
@@ -544,7 +871,7 @@ void desenhaCamaEMovel(){
             
             //base
             glPushMatrix();
-                glColor3f(0.3f, 0.3f, 0.3f); 
+                matMetal(0.7f, 0.6f, 0.2f);
                 glScalef(0.4f, 0.05f, 0.4f);
                 glutSolidCube(1.0f);
             glPopMatrix();
@@ -552,11 +879,11 @@ void desenhaCamaEMovel(){
             //haste
             glPushMatrix();
                 glTranslatef(0.0f, 0.4f, 0.0f);
-                glColor3f(0.7f, 0.6f, 0.2f); 
+                matMetal(0.7f, 0.6f, 0.2f); 
                 glScalef(0.05f, 0.8f, 0.05f);
                 glutSolidCube(1.0f);
             glPopMatrix();
-
+            //cupula
             glPushMatrix();
                 glTranslatef(0.0f, 0.65f, 0.0f); // dentro da cupula
                 
@@ -575,7 +902,7 @@ void desenhaCamaEMovel(){
                     glMaterialfv(GL_FRONT, GL_EMISSION, emissao);
                 }
                 
-                glColor3f(1.0f, 1.0f, 0.8f); // Cor base da lâmpada
+                matTecido(0.9f, 0.9f, 0.4f);
                 glutSolidSphere(0.08, 10, 10); // Desenha a bolinha
                 
                 // desliga emissao nao afeta cor objetos
@@ -588,7 +915,7 @@ void desenhaCamaEMovel(){
                 glTranslatef(0.0f, 0.5f, 0.0f);
                 glColor3f(0.9f, 0.9f, 0.4f); // Amarelo base
                 
-                // --- NOVO: FAZ A CÚPULA BRILHAR QUANDO LIGADA ---
+                //cupula brilha ao ligar
                 if (luzAbajur) {
                     float emissaoCupula[] = {0.6f, 0.6f, 0.2f, 1.0f}; // Brilho amarelado
                     glMaterialfv(GL_FRONT, GL_EMISSION, emissaoCupula);
@@ -610,13 +937,13 @@ void desenhaCamaEMovel(){
 void desenhaCadeira(){
     glPushMatrix();
         //interacao
-        glTranslatef(0.0f, 0.0f, -0.20f);
+        glTranslatef(0.0f, 0.0f, -4.0f);
         glRotatef(anguloCadeira, 0.0f, 1.0f, 0.0f);
 
         //assento
         glPushMatrix();
             glTranslatef(0.0f, 1.2f, 0.0f); 
-            glColor3f(0.2f, 0.3f, 0.4f);
+            matTecido(0.2f, 0.3f, 0.4f);
             glScalef(1.2f, 0.2f, 1.0f);     
             glutSolidCube(1.0f);
         glPopMatrix();
@@ -624,7 +951,7 @@ void desenhaCadeira(){
         //encosto
         glPushMatrix();
             glTranslatef(0.0f, 1.7f, 0.45f); //atras do assento
-            glColor3f(0.2f, 0.3f, 0.4f);
+            matTecido(0.2f, 0.3f, 0.4f);
             glScalef(1.2f, 1.0f, 0.15f);
             glutSolidCube(1.0f);
         glPopMatrix();
@@ -634,7 +961,7 @@ void desenhaCadeira(){
             //haste vertical
             glPushMatrix();
                 glTranslatef(-0.55f, 1.35f, 0.1f);
-                glColor3f(0.1f, 0.1f, 0.1f);
+                matMetal(0.1f, 0.1f, 0.1f);
                 glScalef(0.05f, 0.3f, 0.05f);
                 glutSolidCube(1.0f);
             glPopMatrix();
@@ -651,7 +978,7 @@ void desenhaCadeira(){
             //haste vertical
             glPushMatrix();
                 glTranslatef(0.55f, 1.35f, 0.1f);
-                glColor3f(0.1f, 0.1f, 0.1f);
+                matMetal(0.1f, 0.1f, 0.1f);
                 glScalef(0.05f, 0.3f, 0.05f);
                 glutSolidCube(1.0f);
             glPopMatrix();
@@ -666,7 +993,7 @@ void desenhaCadeira(){
         //haste central 
         glPushMatrix();
             glTranslatef(0.0f, 0.6f, 0.0f);
-            glColor3f(0.1f, 0.1f, 0.1f); 
+            matMetal(0.1f, 0.1f, 0.1f); 
             glScalef(0.1f, 1.2f, 0.1f);
             glutSolidCube(1.0f);
         glPopMatrix();
@@ -674,14 +1001,14 @@ void desenhaCadeira(){
         //base
         glPushMatrix();
             glTranslatef(0.0f, 0.1f, 0.0f);
-            glColor3f(0.1f, 0.1f, 0.1f);
+            matMetal(0.1f, 0.1f, 0.1f);
             glScalef(1.5f, 0.1f, 0.2f);
             glutSolidCube(1.0f);
         glPopMatrix();
 
         glPushMatrix();
             glTranslatef(0.0f, 0.1f, 0.0f);
-            glColor3f(0.1f, 0.1f, 0.1f);
+            matMetal(0.1f, 0.1f, 0.1f);
             glScalef(0.2f, 0.1f, 1.5f);
             glutSolidCube(1.0f);
         glPopMatrix();
@@ -692,39 +1019,39 @@ void desenhaCadeira(){
 void desenhaAcessorio(){
     //teclado
     glPushMatrix();
-        glTranslatef(0.0f, 2.15f, -1.2f); 
-        glColor3f(0.8f, 0.8f, 0.8f); // Cinza claro
+        glTranslatef(0.0f, 2.15f, -5.2f); 
+        matPlastico(0.8f, 0.8f, 0.8f);
         glScalef(1.2f, 0.1f, 0.4f);
         glutSolidCube(1.0);
     glPopMatrix();
 
     //mouse
     glPushMatrix();
-        glTranslatef(0.8f, 2.15f, -1.2f); 
+        glTranslatef(0.8f, 2.15f, -5.2f); 
 
         glPushMatrix();
-            glColor3f(0.1f, 0.1f, 0.1f); // Preto/Cinza escuro
+            matPlastico(0.1f, 0.1f, 0.1f);
             glScalef(0.2f, 0.1f, 0.3f);
             glutSolidCube(1.0);
         glPopMatrix();
-
+        //Scroll
         glPushMatrix();
-            // Sobe um pouco o eixo Y (+0.06) e vai para a parte da frente (-0.1 no Z)
+            // Sobe um pouco o eixo Y e vai para a parte da frente 
             glTranslatef(0.0f, 0.08f, -0.12f); 
-            glColor3f(1.0f, 1.0f, 1.0f); // Branco
+            matMetal(1, 1, 1);
             
-            // O Torus nasce "deitado". Giramos 90 graus no eixo Y para ele ficar em pé
+            // O Torus nasce "deitado". Giramos 90 graus no eixo Y para ele ficar em pe
             glRotatef(90.0f, 0.0f, 1.0f, 0.0f); 
             
             // Parâmetros: raio interno, raio externo, fatias (lados), anéis
-            glutSolidTorus(0.015, 0.04, 15, 15);
+            glutSolidTorus(0.015, 0.025, 15, 15);
         glPopMatrix();
     glPopMatrix();
 
     //caneca;
     glPushMatrix();
-        glTranslatef(-1.0f, 2.1f, -1.5f); 
-        glColor3f(0.8f, 0.1f, 0.1f); 
+        glTranslatef(-1.0f, 2.13f, -5.5f); 
+        matCeramica(0.8f, 0.1f, 0.1f);
         glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
         GLUquadric* quad = gluNewQuadric();
         
@@ -739,8 +1066,8 @@ void desenhaAcessorio(){
 
 void desenhaMonitor(){
     glPushMatrix();
-        glTranslatef(.0f,2.1f,-2.0f);
-        glColor3f(.2f,.2f,.2f);
+        glTranslatef(.0f,2.1f,-6.0f);
+        matPlastico(0.2f, 0.2f, 0.2f);
         //apoio
         glPushMatrix();
             glScalef(1.0f, 0.1f, 0.8f);
@@ -755,8 +1082,39 @@ void desenhaMonitor(){
         //tela principal
         glPushMatrix();
             glTranslatef(0.0f, 1.0f, 0.0f);
-            glScalef(2.0f, 1.2f, 0.2f);
-            glutSolidCube(1.0);
+            
+            // Moldura Traseira 
+            matPlastico(0.15f, 0.15f, 0.15f);
+            glPushMatrix();
+                glScalef(2.0f, 1.2f, 0.2f);
+                glutSolidCube(1.0);
+            glPopMatrix();
+
+            // Display / Vidro da Tela
+            if (!monitorLigado) {
+                // Monitor Desligado
+                matVidro(0.1f, 0.1f, 0.12f);
+                glPushMatrix();
+                    glTranslatef(0.0f, 0.0f, 0.11f); // Desloca para frente 
+                    glScalef(1.9f, 1.1f, 0.02f);
+                    glutSolidCube(1.0);
+                glPopMatrix();
+            } else {
+                // Monitor Ligado 
+                matVidro(0.8f, 0.9f, 1.0f);
+                float emissaoMonitor[] = {0.6f, 0.8f, 0.9f, 1.0f};
+                glMaterialfv(GL_FRONT, GL_EMISSION, emissaoMonitor);
+
+                glPushMatrix();
+                    glTranslatef(0.0f, 0.0f, 0.11f);
+                    glScalef(1.9f, 1.1f, 0.02f);
+                    glutSolidCube(1.0);
+                glPopMatrix();
+
+                // Desliga a emissão para não afetar o teclado e o mouse 
+                float semEmissao[] = {0.0f, 0.0f, 0.0f, 1.0f};
+                glMaterialfv(GL_FRONT, GL_EMISSION, semEmissao);
+            }
         glPopMatrix();
     glPopMatrix();
 }
@@ -764,8 +1122,8 @@ void desenhaMonitor(){
 void desenhaMesa(){
     glPushMatrix();
         //mesa no centro
-        glTranslatef(.0f,.0f,-2.0f);
-        glColor3f(.7f,.4f,.2f);
+        glTranslatef(.0f,.0f,-6.0f);
+        matMadeira(0.7f, 0.4f, 0.2f);
 
         //tampo
         glPushMatrix();
@@ -799,69 +1157,67 @@ void desenhaMesa(){
         glPopMatrix();
     glPopMatrix();
 
-
-
 }
 
 void desenhaSala() {
+    material(0.4f, 0.25f, 0.15f, 0.35f, 30.0f);
     glBegin(GL_QUADS);
-
-        // 1. CHÃO (Sem subdivisão - 1 grande quadrado)
-        glColor3f(0.4f, 0.25f, 0.15f);
         glNormal3f(0.0f, 1.0f, 0.0f); 
         glVertex3f(-8.0f, 0.0f,  8.0f);
         glVertex3f( 8.0f, 0.0f,  8.0f);
         glVertex3f( 8.0f, 0.0f, -8.0f);
         glVertex3f(-8.0f, 0.0f, -8.0f);
-
-        // 2. PAREDE DA FRENTE (Janela/Mesa, Z = -8.0f)
-        glColor3f(0.5f, 0.5f, 0.5f);
+    glEnd();
+    matParede(0.5f, 0.5f, 0.5f);
+    glBegin(GL_QUADS);
+        // 2. PAREDE DA FRENTE
+        //glColor3f(0.5f, 0.5f, 0.5f);
         glNormal3f(0.0f, 0.0f, 1.0f); 
         glVertex3f(-8.0f, 0.0f, -8.0f);
         glVertex3f( 8.0f, 0.0f, -8.0f);
         glVertex3f( 8.0f, 6.0f, -8.0f);
         glVertex3f(-8.0f, 6.0f, -8.0f);
 
-        // 3. PAREDE LATERAL ESQUERDA (X = -8.0f)
-        glColor3f(0.45f, 0.45f, 0.45f);
+        // 3. PAREDE LATERAL ESQUERDA 
+        //glColor3f(0.45f, 0.45f, 0.45f);
         glNormal3f(1.0f, 0.0f, 0.0f); 
         glVertex3f(-8.0f, 0.0f,  8.0f);
         glVertex3f(-8.0f, 0.0f, -8.0f);
         glVertex3f(-8.0f, 6.0f, -8.0f);
         glVertex3f(-8.0f, 6.0f,  8.0f);
 
-        // 4. PAREDE LATERAL DIREITA (X = 8.0f)
-        glColor3f(0.45f, 0.45f, 0.45f);
+        // 4. PAREDE LATERAL DIREITA 
+        //glColor3f(0.45f, 0.45f, 0.45f);
         glNormal3f(-1.0f, 0.0f, 0.0f); 
         glVertex3f(8.0f, 0.0f, -8.0f);
         glVertex3f(8.0f, 0.0f,  8.0f);
         glVertex3f(8.0f, 6.0f,  8.0f);
         glVertex3f(8.0f, 6.0f, -8.0f);
 
-        // 5. PAREDE DE TRÁS (Com vão da porta em -5.5f, Z = 8.0f)
-        glColor3f(0.5f, 0.5f, 0.5f);
+        // 5. PAREDE DE TRÁS 
+        //glColor3f(0.5f, 0.5f, 0.5f);
         glNormal3f(0.0f, 0.0f, -1.0f);
         
-        // Bloco à esquerda da porta (X: -8.0 até -6.5)
+        // Bloco à esquerda da porta 
         glVertex3f(-8.0f, 0.0f, 8.0f);
         glVertex3f(-6.5f, 0.0f, 8.0f);
         glVertex3f(-6.5f, 6.0f, 8.0f);
         glVertex3f(-8.0f, 6.0f, 8.0f);
 
-        // Bloco acima da porta (X: -6.5 até -4.5 | Y: 4.0 até 6.0)
+        // Bloco acima da porta 
         glVertex3f(-6.5f, 4.0f, 8.0f);
         glVertex3f(-4.5f, 4.0f, 8.0f);
         glVertex3f(-4.5f, 6.0f, 8.0f);
         glVertex3f(-6.5f, 6.0f, 8.0f);
 
-        // Bloco à direita da porta (X: -4.5 até 8.0)
+        // Bloco à direita da porta
         glVertex3f(-4.5f, 0.0f, 8.0f);
         glVertex3f( 8.0f, 0.0f, 8.0f);
         glVertex3f( 8.0f, 6.0f, 8.0f);
         glVertex3f(-4.5f, 6.0f, 8.0f);
 
-        // 6. TETO SUBDIVIDIDO (Onde está a luz principal)
-        glColor3f(0.8f, 0.8f, 0.8f);
+        // 6. TETO SUBDIVIDIDO 
+        matParede(0.8f, 0.8f, 0.8f);
         glNormal3f(0.0f, -1.0f, 0.0f);
         for(float x = -8.0f; x < 8.0f; x += 1.0f) {
             for(float z = -8.0f; z < 8.0f; z += 1.0f) {
@@ -874,54 +1230,13 @@ void desenhaSala() {
 
     glEnd();
 }
-/*
-void desenhaSala() {
-    //SUBDIVISAO PARA MELHORAR A REFLEXAO DA LUZ
-    glBegin(GL_QUADS);
-        //CHAO SUBDIVIDIDO (Malha 1x1 metro)
-        glColor3f(0.4f, 0.25f, 0.15f);
-        glNormal3f(0.0f, 1.0f, 0.0f); 
-        for(float x = -8.0f; x < 8.0f; x += 0.25f) {
-            for(float z = -8.0f; z < 8.0f; z += 0.25f) {
-                glVertex3f(x, 0.0f, z + 0.25f);
-                glVertex3f(x + 0.25f, 0.0f, z + 0.25f);
-                glVertex3f(x + 0.25f, 0.0f, z);
-                glVertex3f(x, 0.0f, z);
-            }
-        }
 
-        //PAREDE DO FUNDO SUBDIVIDIDA
-        glColor3f(0.5f, 0.5f, 0.5f);
-        glNormal3f(0.0f, 0.0f, 1.0f); 
-        for(float x = -8.0f; x < 8.0f; x += 1.0f) {
-            for(float y = 0.0f; y < 6.0f; y += 1.0f) {
-                glVertex3f(x, y, -8.0f);
-                glVertex3f(x + 1.0f, y, -8.0f);
-                glVertex3f(x + 1.0f, y + 1.0f, -8.0f);
-                glVertex3f(x, y + 1.0f, -8.0f);
-            }
-        }
-
-        //PAREDE LATERAL ESQUERDA SUBDIVIDIDA
-        glColor3f(0.45f, 0.45f, 0.45f);
-        glNormal3f(1.0f, 0.0f, 0.0f); 
-        for(float z = -8.0f; z < 8.0f; z += 1.0f) {
-            for(float y = 0.0f; y < 6.0f; y += 1.0f) {
-                glVertex3f(-8.0f, y, z + 1.0f);
-                glVertex3f(-8.0f, y, z);
-                glVertex3f(-8.0f, y + 1.0f, z);
-                glVertex3f(-8.0f, y + 1.0f, z + 1.0f);
-            }
-        }
-    glEnd();
-}
-*/
 void display(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     gluLookAt(camX,camY,camZ, camX + dirX,camY + dirY,camZ + dirZ,.0f,1.0f,.0f);
 
-    float posicaoLuzTeto[] = {0.0f, 5.0f, 0.0f, 1.0f}; 
+    float posicaoLuzTeto[] = {0.0f, 5.2f, 0.0f, 1.0f};
     glLightfv(GL_LIGHT0, GL_POSITION, posicaoLuzTeto);
 
     desenhaSala();
@@ -934,6 +1249,10 @@ void display(){
     desenhaEstante();
     desenhaQuadro();
     desenhaPorta();
+    desenhaRackETV();
+    desenhaArmario();
+    desenhaQuadrosEsquerda();
+    desenhaLampada();
     
     glutSwapBuffers();
 }
@@ -964,7 +1283,21 @@ void init() {
     glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.05f);
     glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.01f);
     //glEnable(GL_LIGHT1);
+    // Luz 0 (teto)
+    float espec0[] = {0.8f, 0.8f, 0.8f, 1.0f};
+    glLightfv(GL_LIGHT0, GL_SPECULAR, espec0);
+
+    // Luz 1 (abajur)
+    float espec1[] = {1.0f, 0.9f, 0.4f, 1.0f};
+    glLightfv(GL_LIGHT1, GL_SPECULAR, espec1);
+
+    // Brilho calculado com a posição real da câmera 
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+
+    // Luz ambiente global baixinha, para o quarto não ficar preto com a luz apagada
+    float ambGlobal[] = {0.08f, 0.08f, 0.08f, 1.0f};
     
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambGlobal);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -980,8 +1313,8 @@ int main(int argc, char** argv){
     glutDisplayFunc(display);
 
     glutKeyboardFunc(teclado);
-    glutPassiveMotionFunc(capturaMouse);
-    glutSetCursor(GLUT_CURSOR_NONE);
+    glutMouseFunc(gerenciaMouse);     
+    glutMotionFunc(movimentoMouse);
     glutMainLoop();
     return 0;
 }
