@@ -23,10 +23,30 @@ float anguloPorta = .0f;
 bool tvLigada = false;
 bool monitorLigado = false;
 
-GLuint texTV;
 
 bool cortinaAberta = false;
 float cortinaDeslocamento = 0.0f;
+
+// Base: cor (ambiente+difusa via COLOR_MATERIAL), especular e brilho (0..128)
+void material(float r, float g, float b, float espec, float brilho) {
+    glColor3f(r, g, b);
+    float s[] = {espec, espec, espec, 1.0f};
+    glMaterialfv(GL_FRONT, GL_SPECULAR, s);
+    glMaterialf(GL_FRONT, GL_SHININESS, brilho);
+}
+
+// Presets
+void matMadeira (float r, float g, float b) { material(r, g, b, 0.15f, 12.0f); }  // brilho fraco e largo
+void matMetal   (float r, float g, float b) { material(r, g, b, 0.90f, 100.0f); } // brilho forte e fechado
+void matPlastico(float r, float g, float b) { material(r, g, b, 0.50f, 40.0f);  }
+void matCeramica(float r, float g, float b) { material(r, g, b, 0.70f, 70.0f);  }
+void matVidro   (float r, float g, float b) { material(r, g, b, 0.95f, 110.0f); }
+void matTecido  (float r, float g, float b) { material(r, g, b, 0.00f, 1.0f);   } // totalmente fosco
+void matParede  (float r, float g, float b) { material(r, g, b, 0.02f, 2.0f);   }
+
+
+#include "extras.h"
+
 void gerenciaMouse(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON) {
         if (state == GLUT_DOWN) {
@@ -62,56 +82,38 @@ void movimentoMouse(int x, int y) {
     glutPostRedisplay();
 }
 void teclado(unsigned char key, int x_mouse, int y_mouse){
-    float velocidade = .5f;
-    float giro = .1f;
+    float len = sqrt(dirX*dirX + dirZ*dirZ);
+    float fx = dirX / len, fz = dirZ / len;   // sem perder velocidade ao olhar para cima/baixo
+    float velocidade = 0.5f;
     switch(tolower(key)){
-        case 'w': 
-            camX += dirX * velocidade; 
-            camZ += dirZ * velocidade; 
-            break;
-        case 's': 
-            camX -= dirX * velocidade; 
-            camZ -= dirZ * velocidade; 
-            break;
-        case 'd': 
-            camX -= dirZ * velocidade; 
-            camZ += dirX * velocidade;
-            break;
-        case 'a': 
-            camX += dirZ * velocidade; 
-            camZ -= dirX * velocidade;
-            break;
-        case 'r':{
-            float dist = sqrt(pow(camX - 0.0f, 2) + pow(camZ - (-4.0f), 2));
-            if(dist<2.5f){
-                anguloCadeira += 15.0f;
-            }
+        case 'w': mover( fx*velocidade,  fz*velocidade); break;
+        case 's': mover(-fx*velocidade, -fz*velocidade); break;
+        case 'd': mover(-fz*velocidade,  fx*velocidade); break;
+        case 'a': mover( fz*velocidade, -fx*velocidade); break;
+        case 'h': mostraHUD = !mostraHUD; break;
+        case 'r': {
+            float dist = sqrt(pow(camX, 2) + pow(camZ + 4.0f, 2));
+            if (dist < 2.5f) anguloCadeiraAlvo += 45.0f;
             break;
         }
         case 'e': {
-            // 1. Tenta interagir com a Gaveta do movel
-            float distGaveta = sqrt(pow(camX - (3.0f), 2) + pow(camZ - (-6.0f), 2));
-            if (distGaveta < 3.0f) { 
+            float distGaveta = sqrt(pow(camX - 3.0f, 2) + pow(camZ + 6.0f, 2));
+            if (distGaveta < 3.0f) {
                 gavetaAberta = !gavetaAberta;
-                gavetaX = gavetaAberta ? 1.0f : 0.0f; 
+                gavetaAlvo = gavetaAberta ? 1.0f : 0.0f;
             }
-
-            // 2. Tenta interagir com a Porta
-            float distPorta = sqrt(pow(camX - (-5.5f), 2) + pow(camZ - 8.0f, 2));
-            if (distPorta < 4.0f) { 
+            float distPorta = sqrt(pow(camX + 5.5f, 2) + pow(camZ - 8.0f, 2));
+            if (distPorta < 4.0f) {
                 portaAberta = !portaAberta;
-                anguloPorta = portaAberta ? 90.0f : 0.0f; 
+                anguloPortaAlvo = portaAberta ? 90.0f : 0.0f;
             }
-            // 3. Tenta interagir com a TV
-            float distTV = sqrt(pow(camX + (-5.5f), 2) + pow(camZ - 7.0f, 2));
-            if (distTV < 4.0f) { 
+            float distTV = sqrt(pow(camX - 5.5f, 2) + pow(camZ - 7.0f, 2));
+            if (distTV < 4.0f) {
                 tvLigada = !tvLigada;
+                if (tvLigada) glEnable(GL_LIGHT2); else glDisable(GL_LIGHT2);
             }
-            // 4. Tenta interagir com o Monitor
-            float distMonitor = sqrt(pow(camX - 0.0f, 2) + pow(camZ - (-6.0f), 2));
-            if (distMonitor < 3.5f) { 
-                monitorLigado = !monitorLigado;
-            }
+            float distMonitor = sqrt(pow(camX, 2) + pow(camZ + 6.0f, 2));
+            if (distMonitor < 3.5f) monitorLigado = !monitorLigado;
             break;
         }
         case 'f':{
@@ -132,10 +134,9 @@ void teclado(unsigned char key, int x_mouse, int y_mouse){
         }
         case 'c':{
             float distJanela = sqrt(pow(camX - 4.0f, 2) + pow(camZ - (-7.9f), 2));
-            if (distJanela < 4.0f) { 
+            if (distJanela < 4.0f) {
                 cortinaAberta = !cortinaAberta;
-                // Empurra a cortina 1.2 unidades para os lados quando aberta
-                cortinaDeslocamento = cortinaAberta ? 1.2f : 0.0f; 
+                cortinaAlvo = cortinaAberta ? 1.0f : 0.0f;
             }
             break;
         }
@@ -154,22 +155,7 @@ void reshape(int w, int h){
     glMatrixMode(GL_MODELVIEW);
 }
 
-// Base: cor (ambiente+difusa via COLOR_MATERIAL), especular e brilho (0..128)
-void material(float r, float g, float b, float espec, float brilho) {
-    glColor3f(r, g, b);
-    float s[] = {espec, espec, espec, 1.0f};
-    glMaterialfv(GL_FRONT, GL_SPECULAR, s);
-    glMaterialf(GL_FRONT, GL_SHININESS, brilho);
-}
 
-// Presets
-void matMadeira (float r, float g, float b) { material(r, g, b, 0.15f, 12.0f); }  // brilho fraco e largo
-void matMetal   (float r, float g, float b) { material(r, g, b, 0.90f, 100.0f); } // brilho forte e fechado
-void matPlastico(float r, float g, float b) { material(r, g, b, 0.50f, 40.0f);  }
-void matCeramica(float r, float g, float b) { material(r, g, b, 0.70f, 70.0f);  }
-void matVidro   (float r, float g, float b) { material(r, g, b, 0.95f, 110.0f); }
-void matTecido  (float r, float g, float b) { material(r, g, b, 0.00f, 1.0f);   } // totalmente fosco
-void matParede  (float r, float g, float b) { material(r, g, b, 0.02f, 2.0f);   }
 
 void desenhaLampada(){
     glPushMatrix();
@@ -267,13 +253,15 @@ void desenhaQuadrosEsquerda() {
         glRotatef(90.0f, 0.0f, 1.0f, 0.0f); 
 
         // Função lambda/interna rápida para desenhar um quadro genérico
-        auto desenhaUmQuadro = []() {
+        auto desenhaUmQuadro = [](GLuint tex) {
             // Tela Branca
             glPushMatrix();
                 matTecido(0.9f, 0.9f, 0.9f);
                 glScalef(1.5f, 2.0f, 0.05f);
                 glutSolidCube(1.0f);
             glPopMatrix();
+            matTecido(1, 1, 1);
+            planoTex(tex, -0.75f,-1.0f,0.03f,  1.5f,0,0,  0,2.0f,0,  0,0,1,  1,1, 4,4);
             // Moldura Escura
             matMadeira(0.2f, 0.1f, 0.1f);
             glPushMatrix(); glTranslatef(0.0f, 1.05f, 0.0f); glScalef(1.6f, 0.1f, 0.1f); glutSolidCube(1.0f); glPopMatrix();
@@ -281,17 +269,17 @@ void desenhaQuadrosEsquerda() {
             glPushMatrix(); glTranslatef(-0.75f, 0.0f, 0.0f); glScalef(0.1f, 2.0f, 0.1f); glutSolidCube(1.0f); glPopMatrix();
             glPushMatrix(); glTranslatef(0.75f, 0.0f, 0.0f); glScalef(0.1f, 2.0f, 0.1f); glutSolidCube(1.0f); glPopMatrix();
         };
-
+        
         // Quadro 1
         glPushMatrix();
             glTranslatef(-1.5f, 0.0f, 0.0f); 
-            desenhaUmQuadro();
+            desenhaUmQuadro(texQuadroAbstrato);
         glPopMatrix();
 
         // Quadro 2 
         glPushMatrix();
             glTranslatef(1.5f, 0.5f, 0.0f); 
-            desenhaUmQuadro();
+            desenhaUmQuadro(texQuadroPaisagem);
         glPopMatrix();
 
     glPopMatrix();
@@ -420,19 +408,12 @@ void desenhaRackETV() {
                     glPopMatrix();
                 } else {
                     // TV Ligada: Tela Azul 
-                    matVidro(0.8f, 0.9f, 1.0f);
-                    float emissaoTV[]  = {0.3f, 0.5f, 0.9f, 1.0f};
+                    matVidro(1, 1, 1);
+                    float emissaoTV[] = {0.6f, 0.6f, 0.6f, 1.0f};
                     glMaterialfv(GL_FRONT, GL_EMISSION, emissaoTV);
-
-                    glPushMatrix();
-                        glTranslatef(0.05f, 0.0f, 0.0f);
-                        glScalef(0.01f, 1.02f, 2.02f);
-                        glutSolidCube(1.0f);
-                    glPopMatrix();
-                    // desliga a emissão para não vazar para os próximos objetos
-                    float semEmissao[] = {0.0f, 0.0f, 0.0f, 1.0f};
+                    telaTV();
+                    float semEmissao[] = {0, 0, 0, 1};
                     glMaterialfv(GL_FRONT, GL_EMISSION, semEmissao);
-                    
                 }
             glPopMatrix();
         glPopMatrix();
@@ -505,7 +486,8 @@ void desenhaQuadro() {
             glScalef(0.05f, 2.0f, 3.0f); 
             glutSolidCube(1.0f);
         glPopMatrix();
-
+        matTecido(1, 1, 1);
+        planoTex(texQuadroPaisagem, -0.03f,-1.0f,-1.5f,  0,0,3.0f,  0,2.0f,0,  -1,0,0,  1,1, 6,4);
         // moldura escura
         glColor3f(0.2f, 0.1f, 0.1f);
         
@@ -718,37 +700,6 @@ void desenhaJanela() {
             glutSolidCube(1.0f);
         glPopMatrix();
 
-        //cortinas laterais  
-        glColor4f(0.8f, 0.7f, 0.5f, 0.7f); 
-        float zero[] = {0, 0, 0, 1};
-        glMaterialfv(GL_FRONT, GL_SPECULAR, zero);
-        
-        // Cortina Esquerda
-        glPushMatrix();
-            // Ponto âncora: canto esquerdo.
-            // joga a cortina bem para a frente do vidro.
-            glTranslatef(-1.6f, 0.0f, 0.1f);
-            
-            // Quando aberta, encolhe para 0.2. Quando fechada, cresce para 1.55 (metade da janela).
-            float escalaEsq = cortinaAberta ? 0.3f : 1.6f;
-            
-            glTranslatef(escalaEsq / 2.0f, 0.0f, 0.0f);
-            glScalef(escalaEsq, 2.2f, 0.05f);
-            glutSolidCube(1.0f);
-        glPopMatrix();
-
-        // Cortina Direita
-        glPushMatrix();
-            // Ponto âncora: canto direito.
-            glTranslatef(1.6f, 0.0f, 0.1f);
-            
-            float escalaDir = cortinaAberta ? 0.3f : 1.6f;
-            
-            glTranslatef(-escalaDir / 2.0f, 0.0f, 0.0f);
-            glScalef(escalaDir, 2.2f, 0.05f);
-            glutSolidCube(1.0f);
-        glPopMatrix();
-
     glPopMatrix();
 }
 void desenhaCamaEMovel(){
@@ -771,7 +722,7 @@ void desenhaCamaEMovel(){
             glScalef(2.8f, 0.4f, 5.8f);
             glutSolidCube(1.0f);
         glPopMatrix();
-        
+        desenhaColcha();
         // travesseiro
         glPushMatrix(); // 
             glTranslatef(0.0f, 1.3f, -2.0f); 
@@ -1100,21 +1051,13 @@ void desenhaMonitor(){
                     glutSolidCube(1.0);
                 glPopMatrix();
             } else {
-                // Monitor Ligado 
-                matVidro(0.8f, 0.9f, 1.0f);
-                float emissaoMonitor[] = {0.6f, 0.8f, 0.9f, 1.0f};
-                glMaterialfv(GL_FRONT, GL_EMISSION, emissaoMonitor);
-
-                glPushMatrix();
-                    glTranslatef(0.0f, 0.0f, 0.11f);
-                    glScalef(1.9f, 1.1f, 0.02f);
-                    glutSolidCube(1.0);
-                glPopMatrix();
-
-                // Desliga a emissão para não afetar o teclado e o mouse 
-                float semEmissao[] = {0.0f, 0.0f, 0.0f, 1.0f};
-                glMaterialfv(GL_FRONT, GL_EMISSION, semEmissao);
-            }
+            matVidro(1, 1, 1);
+            float emissaoMonitor[] = {0.6f, 0.6f, 0.6f, 1.0f};
+            glMaterialfv(GL_FRONT, GL_EMISSION, emissaoMonitor);
+            telaMonitor();
+            float semEmissao[] = {0, 0, 0, 1};
+            glMaterialfv(GL_FRONT, GL_EMISSION, semEmissao);
+        }
         glPopMatrix();
     glPopMatrix();
 }
@@ -1159,87 +1102,17 @@ void desenhaMesa(){
 
 }
 
-void desenhaSala() {
-    material(0.4f, 0.25f, 0.15f, 0.35f, 30.0f);
-    glBegin(GL_QUADS);
-        glNormal3f(0.0f, 1.0f, 0.0f); 
-        glVertex3f(-8.0f, 0.0f,  8.0f);
-        glVertex3f( 8.0f, 0.0f,  8.0f);
-        glVertex3f( 8.0f, 0.0f, -8.0f);
-        glVertex3f(-8.0f, 0.0f, -8.0f);
-    glEnd();
-    matParede(0.5f, 0.5f, 0.5f);
-    glBegin(GL_QUADS);
-        // 2. PAREDE DA FRENTE
-        //glColor3f(0.5f, 0.5f, 0.5f);
-        glNormal3f(0.0f, 0.0f, 1.0f); 
-        glVertex3f(-8.0f, 0.0f, -8.0f);
-        glVertex3f( 8.0f, 0.0f, -8.0f);
-        glVertex3f( 8.0f, 6.0f, -8.0f);
-        glVertex3f(-8.0f, 6.0f, -8.0f);
-
-        // 3. PAREDE LATERAL ESQUERDA 
-        //glColor3f(0.45f, 0.45f, 0.45f);
-        glNormal3f(1.0f, 0.0f, 0.0f); 
-        glVertex3f(-8.0f, 0.0f,  8.0f);
-        glVertex3f(-8.0f, 0.0f, -8.0f);
-        glVertex3f(-8.0f, 6.0f, -8.0f);
-        glVertex3f(-8.0f, 6.0f,  8.0f);
-
-        // 4. PAREDE LATERAL DIREITA 
-        //glColor3f(0.45f, 0.45f, 0.45f);
-        glNormal3f(-1.0f, 0.0f, 0.0f); 
-        glVertex3f(8.0f, 0.0f, -8.0f);
-        glVertex3f(8.0f, 0.0f,  8.0f);
-        glVertex3f(8.0f, 6.0f,  8.0f);
-        glVertex3f(8.0f, 6.0f, -8.0f);
-
-        // 5. PAREDE DE TRÁS 
-        //glColor3f(0.5f, 0.5f, 0.5f);
-        glNormal3f(0.0f, 0.0f, -1.0f);
-        
-        // Bloco à esquerda da porta 
-        glVertex3f(-8.0f, 0.0f, 8.0f);
-        glVertex3f(-6.5f, 0.0f, 8.0f);
-        glVertex3f(-6.5f, 6.0f, 8.0f);
-        glVertex3f(-8.0f, 6.0f, 8.0f);
-
-        // Bloco acima da porta 
-        glVertex3f(-6.5f, 4.0f, 8.0f);
-        glVertex3f(-4.5f, 4.0f, 8.0f);
-        glVertex3f(-4.5f, 6.0f, 8.0f);
-        glVertex3f(-6.5f, 6.0f, 8.0f);
-
-        // Bloco à direita da porta
-        glVertex3f(-4.5f, 0.0f, 8.0f);
-        glVertex3f( 8.0f, 0.0f, 8.0f);
-        glVertex3f( 8.0f, 6.0f, 8.0f);
-        glVertex3f(-4.5f, 6.0f, 8.0f);
-
-        // 6. TETO SUBDIVIDIDO 
-        matParede(0.8f, 0.8f, 0.8f);
-        glNormal3f(0.0f, -1.0f, 0.0f);
-        for(float x = -8.0f; x < 8.0f; x += 1.0f) {
-            for(float z = -8.0f; z < 8.0f; z += 1.0f) {
-                glVertex3f(x, 6.0f, z);
-                glVertex3f(x + 1.0f, 6.0f, z);
-                glVertex3f(x + 1.0f, 6.0f, z + 1.0f);
-                glVertex3f(x, 6.0f, z + 1.0f);
-            }
-        }
-
-    glEnd();
-}
-
 void display(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     gluLookAt(camX,camY,camZ, camX + dirX,camY + dirY,camZ + dirZ,.0f,1.0f,.0f);
-
-    float posicaoLuzTeto[] = {0.0f, 5.2f, 0.0f, 1.0f};
+    float posicaoLuzTeto[] = {0.0f, 5.4f, 0.0f, 1.0f};
     glLightfv(GL_LIGHT0, GL_POSITION, posicaoLuzTeto);
-
+    float posLuzTV[] = {5.5f, 2.9f, 6.2f, 1.0f};
+    glLightfv(GL_LIGHT2, GL_POSITION, posLuzTV);
+    
     desenhaSala();
+    desenhaTapete();
     desenhaMesa();
     desenhaMonitor();
     desenhaAcessorio();
@@ -1253,6 +1126,9 @@ void display(){
     desenhaArmario();
     desenhaQuadrosEsquerda();
     desenhaLampada();
+    
+    desenhaCortinas();
+    desenhaHUD();
     
     glutSwapBuffers();
 }
@@ -1298,8 +1174,7 @@ void init() {
     float ambGlobal[] = {0.08f, 0.08f, 0.08f, 1.0f};
     
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambGlobal);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    initExtras();
 }
 
 int main(int argc, char** argv){
