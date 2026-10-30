@@ -21,7 +21,7 @@ float anguloCadeiraAlvo = 0.0f;
 bool  mostraHUD         = true;
 
 GLuint texChao, texParede, texTV, texMonitor;
-GLuint texQuadroPaisagem, texQuadroAbstrato, texTapete, texColcha, texLivro, texDN,texTeclado,texMouse,texMadeira;
+GLuint texQuadroPaisagem, texQuadroAbstrato, texTapete, texCortina, texColcha, texMesa, texLivro, texDN,texTeclado,texMouse,texMadeira;
 
 // ======================= TEXTURAS PROCEDURAIS =======================
 static void px(unsigned char* d, int w, int x, int y, int r, int g, int b) {

@@ -70,9 +70,11 @@ void carregaImagens() {
     texDN = carregaTexturaBMP("imagens/death_note.bmp", 0);
     texTV = carregaTexturaBMP("imagens/simpsons.bmp", texTV);
     texMonitor = carregaTexturaBMP("imagens/adventure_time.bmp", texMonitor);
-    texMouse = carregaTexturaBMP("imagens/woode.bmp", 0);
+    texMouse = carregaTexturaBMP("imagens/white.bmp", 0);
     texTeclado = carregaTexturaBMP("imagens/teclado.bmp", 0);
-    texMadeira = carregaTexturaBMP("imagens/teste.bmp", texMovel);
+    texMesa = carregaTexturaBMP("imagens/teste.bmp", 0);
+    texMadeira = carregaTexturaBMP("imagens/wood.bmp", texMovel);
+    texCortina = carregaTexturaBMP("imagens/janela.bmp", 0);
 }
 
 #endif
