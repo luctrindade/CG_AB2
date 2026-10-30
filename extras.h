@@ -21,7 +21,7 @@ float anguloCadeiraAlvo = 0.0f;
 bool  mostraHUD         = true;
 
 GLuint texChao, texParede, texTV, texMonitor;
-GLuint texQuadroPaisagem, texQuadroAbstrato, texTapete, texColcha;
+GLuint texQuadroPaisagem, texQuadroAbstrato, texTapete, texColcha, texLivro, texDN,texTeclado,texMouse,texMadeira;
 
 // ======================= TEXTURAS PROCEDURAIS =======================
 static void px(unsigned char* d, int w, int x, int y, int r, int g, int b) {
@@ -167,7 +167,65 @@ GLuint geraColcha() {
         }
     return criaTextura(W, H, d);
 }
+// Textura procedural de couro/tecido em tons de cinza para os livros
+GLuint geraCapaLivro() {
+    const int W = 64, H = 64;
+    static unsigned char d[W * H * 3];
+    for (int y = 0; y < H; y++) {
+        for (int x = 0; x < W; x++) {
+            // Gera um ruído acinzentado (170 a 220) para manter a cor do material viva
+            int n = 170 + (int)((((unsigned)x * 73856093u ^ (unsigned)y * 19349663u) >> 4) & 63);
+            
+            // Cria uma "lombada/costura" escurecendo as bordas
+            if (x < 3 || x > 60 || y < 3 || y > 60) n -= 50; 
+            
+            px(d, W, x, y, n, n, n);
+        }
+    }
+    return criaTextura(W, H, d);
+}
 
+void cuboTex() {
+    float h = 0.5f;
+    glBegin(GL_QUADS);
+        // Frente
+        glNormal3f(0, 0, 1);
+        glTexCoord2f(0, 0); glVertex3f(-h, -h,  h);
+        glTexCoord2f(1, 0); glVertex3f( h, -h,  h);
+        glTexCoord2f(1, 1); glVertex3f( h,  h,  h);
+        glTexCoord2f(0, 1); glVertex3f(-h,  h,  h);
+        // Trás
+        glNormal3f(0, 0, -1);
+        glTexCoord2f(1, 0); glVertex3f(-h, -h, -h);
+        glTexCoord2f(1, 1); glVertex3f(-h,  h, -h);
+        glTexCoord2f(0, 1); glVertex3f( h,  h, -h);
+        glTexCoord2f(0, 0); glVertex3f( h, -h, -h);
+        // Topo
+        glNormal3f(0, 1, 0);
+        glTexCoord2f(0, 1); glVertex3f(-h,  h, -h);
+        glTexCoord2f(0, 0); glVertex3f(-h,  h,  h);
+        glTexCoord2f(1, 0); glVertex3f( h,  h,  h);
+        glTexCoord2f(1, 1); glVertex3f( h,  h, -h);
+        // Fundo
+        glNormal3f(0, -1, 0);
+        glTexCoord2f(0, 0); glVertex3f(-h, -h, -h);
+        glTexCoord2f(1, 0); glVertex3f( h, -h, -h);
+        glTexCoord2f(1, 1); glVertex3f( h, -h,  h);
+        glTexCoord2f(0, 1); glVertex3f(-h, -h,  h);
+        // Direita
+        glNormal3f(1, 0, 0);
+        glTexCoord2f(0, 0); glVertex3f( h, -h, -h);
+        glTexCoord2f(1, 0); glVertex3f( h,  h, -h);
+        glTexCoord2f(1, 1); glVertex3f( h,  h,  h);
+        glTexCoord2f(0, 1); glVertex3f( h, -h,  h);
+        // Esquerda
+        glNormal3f(-1, 0, 0);
+        glTexCoord2f(0, 0); glVertex3f(-h, -h, -h);
+        glTexCoord2f(1, 0); glVertex3f(-h, -h,  h);
+        glTexCoord2f(1, 1); glVertex3f(-h,  h,  h);
+        glTexCoord2f(0, 1); glVertex3f(-h,  h, -h);
+    glEnd();
+}
 // ======================= PLANO TEXTURIZADO SUBDIVIDIDO =======================
 // Origem O, vetores U e V (arestas), normal N, repeticoes de textura e subdivisoes.
 // A subdivisao melhora a iluminacao por vertice (brilho especular aparece em planos grandes).
@@ -348,7 +406,7 @@ void initExtras() {
     texTV = geraTelaTV();            texMonitor = geraTelaMonitor();
     texQuadroPaisagem = geraPaisagem(); texQuadroAbstrato = geraAbstrato();
     texTapete = geraTapete();        texColcha = geraColcha();
-
+    texLivro = geraCapaLivro(); 
     // Luz 2: brilho azulado da TV (ligada junto com a TV)
     float amb[] = {0, 0, 0, 1}, dif[] = {0.25f, 0.4f, 0.9f, 1}, esp[] = {0.2f, 0.3f, 0.6f, 1};
     glLightfv(GL_LIGHT2, GL_AMBIENT, amb);

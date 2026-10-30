@@ -46,6 +46,8 @@ void matParede  (float r, float g, float b) { material(r, g, b, 0.02f, 2.0f);   
 
 
 #include "extras.h"
+#include "texturas.h"
+#include "bmp_loader.h"
 
 void gerenciaMouse(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON) {
@@ -561,19 +563,24 @@ void desenhaEstante() {
 
         // Prateleira de baixo y = 1
         // Livros deitados 
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texLivro);
+
         glPushMatrix();
             matTecido(0.8f,0.5f,0.1f);
             //glColor3f(0.8f, 0.5f, 0.1f);  //Laranja 
             glTranslatef(0.5f, 1.1f, 0.0f);
             glScalef(0.6f, 0.15f, 0.8f);
-            glutSolidCube(1.0f);
+            //glutSolidCube(1.0f);
+            cuboTex();
         glPopMatrix();
         glPushMatrix();
             matTecido(0.2f,0.6f,0.6f);
             //glColor3f(0.2f, 0.6f, 0.6f); // Ciano escuro
             glTranslatef(0.5f, 1.25f, 0.0f);
             glScalef(0.55f, 0.15f, 0.75f);
-            glutSolidCube(1.0f);
+            cuboTex();
+            //glutSolidCube(1.0f);
         glPopMatrix();
         // Livros em pe
         glPushMatrix();
@@ -581,14 +588,16 @@ void desenhaEstante() {
             //glColor3f(0.5f, 0.1f, 0.5f); // Roxo
             glTranslatef(-0.6f, 1.3f, 0.0f);
             glScalef(0.15f, 0.6f, 0.7f);
-            glutSolidCube(1.0f);
+            //glutSolidCube(1.0f);
+            cuboTex();
         glPopMatrix();
         glPushMatrix();
             matTecido(.9f,.8f,.1f);
             //glColor3f(0.9f, 0.8f, 0.1f); // Amarelo
             glTranslatef(-0.4f, 1.3f, 0.0f);
             glScalef(0.2f, 0.55f, 0.7f);
-            glutSolidCube(1.0f);
+            cuboTex();
+            //glutSolidCube(1.0f);
         glPopMatrix();
 
         // prateleira do meio y =2 
@@ -597,14 +606,16 @@ void desenhaEstante() {
             //glColor3f(0.8f, 0.1f, 0.1f); // Vermelho
             glTranslatef(-0.5f, 2.3f, 0.0f);
             glScalef(0.2f, 0.5f, 0.7f);
-            glutSolidCube(1.0f);
+            cuboTex();
+            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
             matTecido(.1f,.2f,.8f);
             //glColor3f(0.1f, 0.2f, 0.8f); // Azul
             glTranslatef(-0.2f, 2.3f, 0.0f);
             glScalef(0.15f, 0.5f, 0.7f);
-            glutSolidCube(1.0f);
+            cuboTex();
+            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
             //glColor3f(0.1f, 0.7f, 0.2f); // Verde 
@@ -612,21 +623,24 @@ void desenhaEstante() {
             glTranslatef(.01f, 2.3f, 0.0f);
             glRotatef(15.0f, 0.0f, 0.0f, 1.0f); // Inclinacao
             glScalef(0.15f, 0.5f, 0.7f);
-            glutSolidCube(1.0f);
+            cuboTex();
+            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
             //glColor3f(0.4f, 0.4f, 0.4f); // Cinza
             matTecido(.4f,.4f,.4f);
             glTranslatef(0.5f, 2.3f, 0.0f);
             glScalef(0.18f, 0.55f, 0.7f);
-            glutSolidCube(1.0f);
+            cuboTex();
+            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
             //glColor3f(0.7f, 0.3f, 0.5f); // Rosa escuro
             matTecido(.7f,.3f,.5f);
             glTranslatef(0.7f, 2.3f, 0.0f);
             glScalef(0.15f, 0.5f, 0.7f);
-            glutSolidCube(1.0f);
+            cuboTex();
+            //glutSolidCube(1.0f);
         glPopMatrix();
 
         // prateleira de cima y = 3
@@ -635,21 +649,24 @@ void desenhaEstante() {
             matTecido(.1f,.1f,.5f);
             glTranslatef(-0.7f, 3.25f, 0.0f);
             glScalef(0.12f, 0.45f, 0.6f);
-            glutSolidCube(1.0f);
+            cuboTex();
+            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
             //lColor3f(0.1f, 0.1f, 0.5f); // Azul escuro
             matTecido(.1f,.1f,.5f);
             glTranslatef(-0.55f, 3.25f, 0.0f);
             glScalef(0.12f, 0.45f, 0.6f);
-            glutSolidCube(1.0f);
+            cuboTex();
+            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
             //glColor3f(0.6f, 0.1f, 0.2f); // Vinho
             matTecido(.6f,.1f,.2f);
             glTranslatef(-0.4f, 3.25f, 0.0f);
             glScalef(0.15f, 0.45f, 0.65f);
-            glutSolidCube(1.0f);
+            cuboTex();
+            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
             //glColor3f(0.3f, 0.5f, 0.2f); // Verde musgo 
@@ -657,7 +674,8 @@ void desenhaEstante() {
             glTranslatef(-0.17f, 3.2f, 0.0f);
             glRotatef(25.0f, 0.0f, 0.0f, 1.0f);
             glScalef(0.12f, 0.45f, 0.6f);
-            glutSolidCube(1.0f);
+            cuboTex();
+            //glutSolidCube(1.0f);
         glPopMatrix();
 
     glPopMatrix();
@@ -795,21 +813,23 @@ void desenhaCamaEMovel(){
 
             glPushMatrix();
                 // Posiciona o livro no centro da gaveta. 
-                glTranslatef(-0.3f, 0.15f, 0.0f); 
+                glTranslatef(-0.25f, 0.15f, 0.0f); 
                 glRotatef(-90.0f,0.0f,1.0f,.0f);
                 // Capa Preta
-                matMetal(0.1f, 0.1f, 0.1f);
+                matTecido(1.0f, 1.0f, 1.0f); // Branco reflete a imagem fielmente
+                glEnable(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, texDN);
                 glPushMatrix();
-                    glScalef(0.4f, 0.1f, 0.5f); // Livro deitado
-                    glutSolidCube(1.0f);
+                    glScalef(0.4f, 0.03f, 0.5f); // Livro deitado
+                    cuboTex();
                 glPopMatrix();
-                
+                glDisable(GL_TEXTURE_2D);
                 // Folhas Brancas
                 glColor3f(0.9f, 0.9f, 0.9f);
                 glPushMatrix();
                     // Desloca milimetricamente no eixo para as páginas saltarem da capa
-                    glTranslatef(0.02f, 0.0f, 0.0f); 
-                    glScalef(0.38f, 0.08f, 0.48f); // Levemente menor que a capa
+                    glTranslatef(0.011f, 0.0f, 0.0f); 
+                    glScalef(0.38f, 0.01f, 0.48f); // Levemente menor que a capa
                     glutSolidCube(1.0f);
                 glPopMatrix();
                 
@@ -968,50 +988,54 @@ void desenhaCadeira(){
 }
 
 void desenhaAcessorio(){
-    //teclado
+    // Teclado
     glPushMatrix();
         glTranslatef(0.0f, 2.15f, -5.2f); 
-        matPlastico(0.8f, 0.8f, 0.8f);
-        glScalef(1.2f, 0.1f, 0.4f);
-        glutSolidCube(1.0);
+        matPlastico(1.0f, 1.0f, 1.0f); // Material branco para a textura não ficar manchada
+        
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texTeclado);
+        glPushMatrix();
+            glScalef(1.2f, 0.1f, 0.4f);
+            cuboTex();
+        glPopMatrix();
+        glDisable(GL_TEXTURE_2D);
     glPopMatrix();
 
-    //mouse
+    // (Mouse)
     glPushMatrix();
         glTranslatef(0.8f, 2.15f, -5.2f); 
 
+        
+        matPlastico(1.0f, 1.0f, 1.0f); 
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texMouse);
         glPushMatrix();
-            matPlastico(0.1f, 0.1f, 0.1f);
             glScalef(0.2f, 0.1f, 0.3f);
-            glutSolidCube(1.0);
+            cuboTex(); 
         glPopMatrix();
-        //Scroll
+        glDisable(GL_TEXTURE_2D);
+
+        // Scroll
         glPushMatrix();
             // Sobe um pouco o eixo Y e vai para a parte da frente 
             glTranslatef(0.0f, 0.08f, -0.12f); 
-            matMetal(1, 1, 1);
+            matMetal(0.3f, 0.3f, 0.3f); 
             
-            // O Torus nasce "deitado". Giramos 90 graus no eixo Y para ele ficar em pe
+            // O Torus nasce "deitado". Giramos 90 graus no eixo Y para ele ficar em pé
             glRotatef(90.0f, 0.0f, 1.0f, 0.0f); 
             
-            // Parâmetros: raio interno, raio externo, fatias (lados), anéis
+            // Parâmetros: raio interno, raio externo, fatias , anéis
             glutSolidTorus(0.015, 0.025, 15, 15);
         glPopMatrix();
     glPopMatrix();
 
-    //caneca;
+    // Caneca 
     glPushMatrix();
-        glTranslatef(-1.0f, 2.13f, -5.5f); 
-        matCeramica(0.8f, 0.1f, 0.1f);
-        glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-        GLUquadric* quad = gluNewQuadric();
-        
-        // Corpo da caneca
-        gluCylinder(quad, 0.15, 0.15, 0.3, 16, 16); 
-        // Fundo da caneca 
-        gluDisk(quad, 0.0, 0.15, 16, 1); 
-        
-        gluDeleteQuadric(quad);
+        glTranslatef(-1.0f, 2.13f, -5.5f);
+        glRotatef(-90.0f, 1, 0, 0);
+        matCeramica(1, 1, 1);
+        cilindroTex(texListras, 0.15f, 0.15f, 0.3f);
     glPopMatrix();
 }
 
@@ -1064,42 +1088,40 @@ void desenhaMonitor(){
 
 void desenhaMesa(){
     glPushMatrix();
-        //mesa no centro
         glTranslatef(.0f,.0f,-6.0f);
-        matMadeira(0.7f, 0.4f, 0.2f);
+        
+        matMadeira(1.0f, 1.0f, 1.0f); 
 
-        //tampo
+        // Tampo 
         glPushMatrix();
             glTranslatef(.0f,2.0f,.0f);
-            glScalef(4.0f,.2f,2.0f);
-            glutSolidCube(1.0);
+            caixaTex(texMadeira, 4.0f, 0.2f, 2.0f);  // aplica textura
         glPopMatrix();
-        //perna Fesq
+        
+        // Perna Fesq (Larg: 0.2, Alt: 2.0, Prof: 0.2)
         glPushMatrix();
             glTranslatef(-1.8f, 1.0f, 0.8f);
-            glScalef(0.2f, 2.0f, 0.2f);
-            glutSolidCube(1.0);
+            caixaTex(texMadeira, 0.2f, 2.0f, 0.2f);
         glPopMatrix();
-        //perna Fdir
+        
+        // Perna Fdir
         glPushMatrix();
             glTranslatef(1.8f, 1.0f, 0.8f);
-            glScalef(0.2f, 2.0f, 0.2f);
-            glutSolidCube(1.0);
+            caixaTex(texMadeira, 0.2f, 2.0f, 0.2f);
         glPopMatrix();
-        //perna Tesq
+        
+        // Perna Tesq
         glPushMatrix();
             glTranslatef(-1.8f, 1.0f, -0.8f);
-            glScalef(0.2f, 2.0f, 0.2f);
-            glutSolidCube(1.0);
+            caixaTex(texMadeira, 0.2f, 2.0f, 0.2f);
         glPopMatrix();
-        //perna Tdir
+        
+        // Perna Tdir
         glPushMatrix();
             glTranslatef(1.8f, 1.0f, -0.8f);
-            glScalef(0.2f, 2.0f, 0.2f);
-            glutSolidCube(1.0);
+            caixaTex(texMadeira, 0.2f, 2.0f, 0.2f);
         glPopMatrix();
     glPopMatrix();
-
 }
 
 void display(){
@@ -1174,7 +1196,11 @@ void init() {
     float ambGlobal[] = {0.08f, 0.08f, 0.08f, 1.0f};
     
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambGlobal);
+
+    glShadeModel(GL_SMOOTH);
     initExtras();
+    initTexAvancadas();
+    carregaImagens();
 }
 
 int main(int argc, char** argv){
