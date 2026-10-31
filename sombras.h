@@ -1,6 +1,4 @@
-// sombras.h - sombra projetada planar (somente isso)
-// Incluir depois de bmp_loader.h. Chamar initSombras() no fim do init() e
-// desenhaSombras() logo depois de desenhaTapete(), antes dos moveis.
+//sombra planar
 //
 // Tecnica: a matriz de projecao planar achata a geometria sobre o piso, projetando a
 // partir da luz do teto:  M = (P.L) * I - L * P^T,  com plano P = (0, 1, 0, -y).
