@@ -1,13 +1,12 @@
 // texturas_avancadas.h
-// Incluir DEPOIS do extras.h. Chamar initTexAvancadas() no fim de initExtras().
 //
-// Conteudo (relacionado aos slides de Mapeamento de Textura):
+// Conteudo:
 //  - Strip texture (sin(pi*x/w) > 0)           -> geraListras()
-//  - Textura xadrez (exemplo da esfera)         -> geraXadrez()
+//  - Textura xadrez                            -> geraXadrez()
 //  - Mapeamento CUBICO (6 projecoes planas)     -> caixaTex()
 //  - Mapeamento CILINDRICO (u = 2*pi*s, z = t)  -> cilindroTex()
 //  - Mapeamento ESFERICO (theta=2*pi*s, phi=pi*t)-> esferaTex()
-//  - Aproximacao de BUMP MAPPING (normais perturbadas) -> planoBump()
+//  - Aproximacao de BUMP MAPPING -> planoBump()
 #ifndef TEXTURAS_AVANCADAS_H
 #define TEXTURAS_AVANCADAS_H
 
@@ -16,7 +15,7 @@ static GLUquadric* qTex = NULL;
 
 // ---------- mapas de textura ----------
 
-// Strip texture dos slides: duas cores alternadas por funcao oscilatoria
+// Strip texture: duas cores alternadas por funcao oscilatoria
 GLuint geraListras() {
     const int W = 64, H = 64;
     static unsigned char d[W * H * 3];
@@ -29,7 +28,7 @@ GLuint geraListras() {
     return criaTextura(W, H, d);
 }
 
-// Xadrez vermelho/azul (mesmo exemplo da esfera dos slides)
+// Xadrez vermelho/azul 
 GLuint geraXadrez() {
     const int W = 64, H = 64;
     static unsigned char d[W * H * 3];
@@ -57,8 +56,9 @@ GLuint geraMadeiraMovel() {
 // ---------- MAPEAMENTO CUBICO ----------
 // Caixa centrada na origem com dimensoes sx,sy,sz. Cada uma das 6 faces recebe uma
 // projecao plana da textura. As coordenadas (u,v) sao proporcionais ao tamanho real
-// da face, entao a textura NAO estica mesmo em pecas finas (tampo de mesa, porta).
+// da face, entao a textura nao estica mesmo em pecas finas (tampo de mesa, porta).
 // Substitui: glPushMatrix(); glScalef(sx,sy,sz); glutSolidCube(1); glPopMatrix();
+
 void caixaTex(GLuint tex, float sx, float sy, float sz, float tile = 1.0f) {
     float x = sx / 2, y = sy / 2, z = sz / 2;
     float U = sx * tile, V = sy * tile, W = sz * tile;
@@ -104,9 +104,10 @@ void caixaTex(GLuint tex, float sx, float sy, float sz, float tile = 1.0f) {
     glDisable(GL_TEXTURE_2D);
 }
 
+
+
 // ---------- MAPEAMENTO CILINDRICO ----------
 // gluQuadricTexture gera: s = angulo/(2*pi) ao redor do eixo Z e t = altura/h,
-// exatamente a parametrizacao do slide (u = 2*pi*s, z = t). Eixo do cilindro = Z local.
 void cilindroTex(GLuint tex, float rBase, float rTopo, float altura) {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, tex);
@@ -120,7 +121,6 @@ void cilindroTex(GLuint tex, float rBase, float rTopo, float altura) {
 
 // ---------- MAPEAMENTO ESFERICO ----------
 // gluSphere gera: s = theta/(2*pi) (longitude) e t = phi/pi (do polo ao polo),
-// a parametrizacao do slide (theta = 2*pi*s, phi = pi*t). Polos no eixo Z local.
 void esferaTex(GLuint tex, float raio) {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, tex);
@@ -129,10 +129,9 @@ void esferaTex(GLuint tex, float raio) {
 }
 
 // ---------- APROXIMACAO DE BUMP MAPPING ----------
-// Ideia dos slides: nao mexer na geometria, so perturbar as NORMAIS.
-// Aqui a perturbacao e feita por vertice (ruido pseudoaleatorio), o que da aspecto
-// rugoso quando a luz passa raspando. Bump mapping real (por pixel, lendo um mapa de
-// alturas) exigiria shaders ou extensoes; esta e a versao possivel no pipeline fixo.
+// Nao mexer na geometria, so perturbar as normais.
+// Perturbacao e feita por vertice (ruido pseudoaleatorio), o que da aspecto
+// rugoso quando a luz passa raspando. 
 static float ruido(int i, int j) {
     unsigned h = (unsigned)i * 73856093u ^ (unsigned)j * 19349663u;
     h *= 2654435761u;

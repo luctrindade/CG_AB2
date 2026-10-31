@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Le um BMP de 24 bits sem compressao. Devolve RGB (linha 0 = base da imagem, como no OpenGL).
+// Le um BMP de 24 bits sem compressao. Devolve RGB.
 // Retorna NULL se o arquivo nao existir ou nao for BMP 24 bits.
 unsigned char* leBMP(const char* arq, int* w, int* h) {
     FILE* f = fopen(arq, "rb");
@@ -70,11 +70,16 @@ void carregaImagens() {
     texDN = carregaTexturaBMP("imagens/death_note.bmp", 0);
     texTV = carregaTexturaBMP("imagens/simpsons.bmp", texTV);
     texMonitor = carregaTexturaBMP("imagens/adventure_time.bmp", texMonitor);
-    texMouse = carregaTexturaBMP("imagens/white.bmp", 0);
+    texAlgodao = carregaTexturaBMP("imagens/algodao.bmp", 0);
     texTeclado = carregaTexturaBMP("imagens/teclado.bmp", 0);
-    texMesa = carregaTexturaBMP("imagens/teste.bmp", 0);
-    texMadeira = carregaTexturaBMP("imagens/wood.bmp", texMovel);
-    texCortina = carregaTexturaBMP("imagens/janela.bmp", 0);
+    texMesa = carregaTexturaBMP("imagens/granito.bmp", 0);
+    texMadeira = carregaTexturaBMP("imagens/redCedar.bmp", texMovel);
+    texCortina = carregaTexturaBMP("imagens/cortina.bmp", 0);
+    texJanela = carregaTexturaBMP("imagens/janela.bmp", 0);
+    texCouro = carregaTexturaBMP("imagens/couro.bmp", 0);
+    texMoldura = carregaTexturaBMP("imagens/moldura.bmp", 0);
+    texCaneca = carregaTexturaBMP("imagens/steel.bmp",0 );
+    texCama = carregaTexturaBMP("imagens/blueT.bmp",0);
 }
 
 #endif

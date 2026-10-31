@@ -15,7 +15,6 @@ float dirY = 0.0f;
 float gavetaX = .0f;
 bool gavetaAberta = false;
 bool mousePressionado = false;
-bool primeiroMouse = true;
 bool luzLampada = true;
 bool luzAbajur = false;
 bool portaAberta = false;
@@ -25,7 +24,6 @@ bool monitorLigado = false;
 
 
 bool cortinaAberta = false;
-float cortinaDeslocamento = 0.0f;
 
 // Base: cor (ambiente+difusa via COLOR_MATERIAL), especular e brilho (0..128)
 void material(float r, float g, float b, float espec, float brilho) {
@@ -173,7 +171,7 @@ void desenhaLampada(){
         // Posiciona no centro do quarto, encostada no teto
         glTranslatef(0.0f, 6.0f, 0.0f); 
 
-        // 1. Fio/Cabo descendo do teto
+        // Fio/Cabo descendo do teto
         matMetal(0.1f, 0.1f, 0.1f); 
         glPushMatrix();
             glTranslatef(0.0f, -0.4f, 0.0f); // Desce a metade do tamanho do fio
@@ -181,7 +179,7 @@ void desenhaLampada(){
             glutSolidCube(1.0f);
         glPopMatrix();
 
-        // 2. Lâmpada/Bulbo 
+        // Lâmpada/Bulbo 
         glPushMatrix();
             glTranslatef(0.0f, -0.5f, 0.0f); 
             
@@ -210,34 +208,28 @@ void desenhaArmario() {
 
         // Corpo do Armário 
         matMadeira(.4f,.25f,.15f);
-        //glColor3f(0.4f, 0.25f, 0.15f);
         glPushMatrix();
             glTranslatef(0.0f, 2.5f, 0.0f);
             caixaTex(texMadeira,1.5f, 5.0f, 3.0f); // 1.5m prof, 5m alt, 3m larg
-            //glutSolidCube(1.0f);
         glPopMatrix();
 
         // Portas do Armário 
         matMadeira(.45f,.3f,.2f);
-        //glColor3f(0.45f, 0.3f, 0.2f);
         
         // Porta Esquerda
         glPushMatrix();
             glTranslatef(0.76f, 2.5f, -0.75f);
             caixaTex(texMadeira,0.05f, 4.8f, 1.4f);
-            //glutSolidCube(1.0f);
         glPopMatrix();
         
         // Porta Direita
         glPushMatrix();
             glTranslatef(0.76f, 2.5f, 0.75f);
             caixaTex(texMadeira,0.05f, 4.8f, 1.4f);
-            //glutSolidCube(1.0f);
         glPopMatrix();
 
         // Puxadores 
         matMetal(0.7f, 0.7f, 0.7f);
-        //glColor3f(0.7f, 0.7f, 0.7f);
         
         // Puxador Esquerdo
         glPushMatrix();
@@ -344,8 +336,8 @@ void desenhaRackETV() {
         glPushMatrix();
             matMadeira(0.9f, 0.88f, 0.85f);
             glTranslatef(0.0f, 0.8f, 0.0f); // Eleva acima dos pés e base
-            glScalef(0.7f, 0.8f, 2.8f); // Proporções do rack
-            glutSolidCube(1.0f);
+            caixaTex(texMoldura,0.7f, 0.8f, 2.8f); // Proporções do rack
+            //glutSolidCube(1.0f);
         glPopMatrix();
 
         //  DETALHE SUPERIOR (Friso amadeirado sob o tampo)
@@ -361,20 +353,20 @@ void desenhaRackETV() {
         // Porta Esquerda
         glPushMatrix();
             glTranslatef(0.36f, 0.77f, -0.92f);
-            glScalef(0.02f, 0.7f, 0.9f);
-            glutSolidCube(1.0f);
+            caixaTex(texMoldura,0.02f, 0.7f, 0.9f);
+            //glutSolidCube(1.0f);
         glPopMatrix();
         // Porta Central
         glPushMatrix();
             glTranslatef(0.36f, 0.77f, 0.0f);
-            glScalef(0.02f, 0.7f, 0.9f);
-            glutSolidCube(1.0f);
+            caixaTex(texMoldura,0.02f, 0.7f, 0.9f);
+            //glutSolidCube(1.0f);
         glPopMatrix();
         // Porta Direita
         glPushMatrix();
             glTranslatef(0.36f, 0.77f, 0.92f);
-            glScalef(0.02f, 0.7f, 0.9f);
-            glutSolidCube(1.0f);
+            caixaTex(texMoldura,0.02f, 0.7f, 0.9f);
+            //glutSolidCube(1.0f);
         glPopMatrix();
 
 
@@ -382,7 +374,7 @@ void desenhaRackETV() {
         glPushMatrix();
             glTranslatef(0.0f, 1.2f, 0.0f);
 
-            // Base de apoio central (Preto)
+            // Base de apoio central 
             matPlastico(0.12f, 0.12f, 0.12f);
             glPushMatrix();
                 glTranslatef(0.0f, 0.02f, 0.0f);
@@ -410,7 +402,7 @@ void desenhaRackETV() {
 
                 // Display/Vidro
                 if (!tvLigada) {
-                    // TV Desligada: Tela preta convencional
+                    // TV Desligada: Tela preta 
                     matVidro(0.15f, 0.15f, 0.18f);
                     glPushMatrix();
                         glTranslatef(0.045f, 0.0f, 0.0f); 
@@ -441,18 +433,18 @@ void desenhaPorta() {
         matMadeira(.3f,.15f,.05f);
         glPushMatrix(); // Batente Esquerdo
             glTranslatef(-1.05f, 0.0f, 0.0f);
-            glScalef(0.1f, 4.0f, 0.15f);
-            glutSolidCube(1.0f);
+            caixaTex(texMadeira,0.1f, 4.0f, 0.15f);
+            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix(); // Batente Direito
             glTranslatef(1.05f, 0.0f, 0.0f);
-            glScalef(0.1f, 4.0f, 0.15f);
-            glutSolidCube(1.0f);
+            caixaTex(texMadeira,0.1f, 4.0f, 0.15f);
+            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix(); // Batente Superior
             glTranslatef(0.0f, 2.05f, 0.0f);
-            glScalef(2.2f, 0.1f, 0.15f);
-            glutSolidCube(1.0f);
+            caixaTex(texMadeira,2.2f, 0.1f, 0.15f);
+            //glutSolidCube(1.0f);
         glPopMatrix();
 
         // Dobradiça e Folha da Porta 
@@ -464,16 +456,8 @@ void desenhaPorta() {
 
             // Folha da porta
             glPushMatrix();
-                matMadeira(.4f,.2f,.1f);
-                glEnable(GL_TEXTURE_2D);
-                glBindTexture(GL_TEXTURE_2D, texMadeira); 
-            
-                glScalef(2.0f, 4.0f, 0.05f);
-                cuboTex();
-            
-                glDisable(GL_TEXTURE_2D);
-                //caixaTex(texMadeira,2.0f, 4.0f, 0.05f);
-                //glutSolidCube(1.0f);
+                matMadeira(.4f,.25f,.15f);
+                caixaTex(texMadeira, 2.0f, 4.0f, 0.05f); 
             glPopMatrix();
 
             // Maçanetas
@@ -498,7 +482,7 @@ void desenhaQuadro() {
         
         glRotatef(90.0,.0f,1.0f,.0f);
 
-        // tela do Quadro (Branca, pronta para receber a textura)
+        // tela do Quadro 
         glPushMatrix();
             glColor3f(0.9f, 0.9f, 0.9f);
             glScalef(0.05f, 2.0f, 3.0f); 
@@ -548,24 +532,21 @@ void desenhaEstante() {
         glPushMatrix();
             glTranslatef(-1.0f, 2.0f, 0.0f);
             caixaTex(texMadeira,0.1f, 4.0f, 1.0f);
-            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
             glTranslatef(1.0f, 2.0f, 0.0f);
             caixaTex(texMadeira,0.1f, 4.0f, 1.0f);
-            //glutSolidCube(1.0f);
+
         glPopMatrix();
 
         // Topo e Base
         glPushMatrix();
             glTranslatef(0.0f, 4.0f, 0.0f);
             caixaTex(texMadeira,2.1f, 0.1f, 1.0f);
-            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
             glTranslatef(0.0f, 0.05f, 0.0f);
             caixaTex(texMadeira,2.1f, 0.1f, 1.0f);
-            //glutSolidCube(1.0f);
         glPopMatrix();
 
         // Prateleiras
@@ -573,7 +554,7 @@ void desenhaEstante() {
             glPushMatrix();
                 glTranslatef(0.0f, y, 0.0f);
                 caixaTex(texMadeira,2.0f, 0.1f, 0.9f);
-                //glutSolidCube(1.0f);
+
             glPopMatrix();
         }
 
@@ -584,114 +565,88 @@ void desenhaEstante() {
 
         glPushMatrix();
             matTecido(0.8f,0.5f,0.1f);
-            //glColor3f(0.8f, 0.5f, 0.1f);  //Laranja 
             glTranslatef(0.5f, 1.1f, 0.0f);
             glScalef(0.6f, 0.15f, 0.8f);
-            //glutSolidCube(1.0f);
             cuboTex();
         glPopMatrix();
         glPushMatrix();
             matTecido(0.2f,0.6f,0.6f);
-            //glColor3f(0.2f, 0.6f, 0.6f); // Ciano escuro
             glTranslatef(0.5f, 1.25f, 0.0f);
             glScalef(0.55f, 0.15f, 0.75f);
             cuboTex();
-            //glutSolidCube(1.0f);
         glPopMatrix();
         // Livros em pe
         glPushMatrix();
             matTecido(.5f,.1f,.5f);
-            //glColor3f(0.5f, 0.1f, 0.5f); // Roxo
             glTranslatef(-0.6f, 1.3f, 0.0f);
             glScalef(0.15f, 0.6f, 0.7f);
-            //glutSolidCube(1.0f);
             cuboTex();
         glPopMatrix();
         glPushMatrix();
             matTecido(.9f,.8f,.1f);
-            //glColor3f(0.9f, 0.8f, 0.1f); // Amarelo
             glTranslatef(-0.4f, 1.3f, 0.0f);
             glScalef(0.2f, 0.55f, 0.7f);
             cuboTex();
-            //glutSolidCube(1.0f);
         glPopMatrix();
 
         // prateleira do meio y =2 
         glPushMatrix();
             matTecido(.8f,.1f,.1f);
-            //glColor3f(0.8f, 0.1f, 0.1f); // Vermelho
             glTranslatef(-0.5f, 2.3f, 0.0f);
             glScalef(0.2f, 0.5f, 0.7f);
             cuboTex();
-            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
             matTecido(.1f,.2f,.8f);
-            //glColor3f(0.1f, 0.2f, 0.8f); // Azul
             glTranslatef(-0.2f, 2.3f, 0.0f);
             glScalef(0.15f, 0.5f, 0.7f);
             cuboTex();
-            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            //glColor3f(0.1f, 0.7f, 0.2f); // Verde 
             matTecido(.1f,.7f,.2f);
             glTranslatef(.01f, 2.3f, 0.0f);
             glRotatef(15.0f, 0.0f, 0.0f, 1.0f); // Inclinacao
             glScalef(0.15f, 0.5f, 0.7f);
             cuboTex();
-            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            //glColor3f(0.4f, 0.4f, 0.4f); // Cinza
             matTecido(.4f,.4f,.4f);
             glTranslatef(0.5f, 2.3f, 0.0f);
             glScalef(0.18f, 0.55f, 0.7f);
             cuboTex();
-            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            //glColor3f(0.7f, 0.3f, 0.5f); // Rosa escuro
             matTecido(.7f,.3f,.5f);
             glTranslatef(0.7f, 2.3f, 0.0f);
             glScalef(0.15f, 0.5f, 0.7f);
             cuboTex();
-            //glutSolidCube(1.0f);
         glPopMatrix();
 
         // prateleira de cima y = 3
         glPushMatrix();
-            //glColor3f(0.1f, 0.1f, 0.5f); // Azul escuro
             matTecido(.1f,.1f,.5f);
             glTranslatef(-0.7f, 3.25f, 0.0f);
             glScalef(0.12f, 0.45f, 0.6f);
             cuboTex();
-            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            //lColor3f(0.1f, 0.1f, 0.5f); // Azul escuro
             matTecido(.1f,.1f,.5f);
             glTranslatef(-0.55f, 3.25f, 0.0f);
             glScalef(0.12f, 0.45f, 0.6f);
             cuboTex();
-            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            //glColor3f(0.6f, 0.1f, 0.2f); // Vinho
             matTecido(.6f,.1f,.2f);
             glTranslatef(-0.4f, 3.25f, 0.0f);
             glScalef(0.15f, 0.45f, 0.65f);
             cuboTex();
-            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
-            //glColor3f(0.3f, 0.5f, 0.2f); // Verde musgo 
             matTecido(.3f,.5f,.2f);
             glTranslatef(-0.17f, 3.2f, 0.0f);
             glRotatef(25.0f, 0.0f, 0.0f, 1.0f);
             glScalef(0.12f, 0.45f, 0.6f);
             cuboTex();
-            //glutSolidCube(1.0f);
         glPopMatrix();
 
     glPopMatrix();
@@ -707,7 +662,7 @@ void desenhaJanela() {
             matVidro(1.0f, 1.0f, 1.0f); 
             
             glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, texCortina); 
+            glBindTexture(GL_TEXTURE_2D, texJanela); 
             
             glScalef(3.0f, 2.0f, 0.05f);
             cuboTex();
@@ -719,25 +674,26 @@ void desenhaJanela() {
         matPlastico(0.9f, 0.9f, 0.9f);
         glPushMatrix();
             glTranslatef(0.0f, 1.0f, 0.0f);
-            glScalef(3.2f, 0.1f, 0.1f);
-            glutSolidCube(1.0f);
+            
+            caixaTex(texMoldura,3.2f, 0.1f, 0.1f);
+            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
             glTranslatef(0.0f, -1.0f, 0.0f);
-            glScalef(3.2f, 0.1f, 0.1f);
-            glutSolidCube(1.0f);
+            caixaTex(texMoldura,3.2f, 0.1f, 0.1f);
+            //glutSolidCube(1.0f);
         glPopMatrix();
 
         //moldura laterais 
         glPushMatrix();
             glTranslatef(-1.55f, 0.0f, 0.0f);
-            glScalef(0.1f, 2.0f, 0.1f);
-            glutSolidCube(1.0f);
+            caixaTex(texMoldura,0.1f, 2.0f, 0.1f);
+            //glutSolidCube(1.0f);
         glPopMatrix();
         glPushMatrix();
             glTranslatef(1.55f, 0.0f, 0.0f);
-            glScalef(0.1f, 2.0f, 0.1f);
-            glutSolidCube(1.0f);
+            caixaTex(texMoldura,0.1f, 2.0f, 0.1f);
+            //glutSolidCube(1.0f);
         glPopMatrix();
 
     glPopMatrix();
@@ -758,8 +714,8 @@ void desenhaCamaEMovel(){
         glPushMatrix();
             glTranslatef(0.0f, 1.0f, 0.0f);
             matTecido(0.3f, 0.4f, 0.7f);
-            glScalef(2.8f, 0.4f, 5.8f);
-            glutSolidCube(1.0f);
+            caixaTex(texCama,2.8f, 0.4f, 5.8f);
+            //glutSolidCube(1.0f);
         glPopMatrix();
         desenhaColcha();
         // travesseiro
@@ -767,8 +723,7 @@ void desenhaCamaEMovel(){
             glTranslatef(0.0f, 1.3f, -2.0f); 
             glRotatef(15.0f, 1.0f, 0.0f, 0.0f);
             matTecido(1, 1, 1);
-            caixaTex(texMouse, 1.5f, 0.2f, 1.0f);
-            //glutSolidCube(1.0f);
+            caixaTex(texAlgodao, 1.5f, 0.2f, 1.0f);
         glPopMatrix();
     glPopMatrix(); 
 
@@ -787,7 +742,7 @@ void desenhaCamaEMovel(){
         // Gaveta interativa e puxador
         glPushMatrix();
             glTranslatef(-0.1f - gavetaX, 1.5f, 0.0f); 
-            matMadeira(.4f,.25f,.15f);
+            matMadeira(.6f,.45f,.35f);
             
             //  Fundo (Base da gaveta)
             glPushMatrix();
@@ -795,7 +750,7 @@ void desenhaCamaEMovel(){
                 caixaTex(texMesa, 1.5f, 0.1f, 1.4f);
             glPopMatrix();
 
-            //  Parede Frontal (onde fica o puxador)
+            //  Parede Frontal 
             glPushMatrix();
                 glTranslatef(-0.7f, 0.0f, 0.0f);
                 caixaTex(texMesa, 0.1f, 0.6f, 1.4f);
@@ -820,10 +775,10 @@ void desenhaCamaEMovel(){
                 caixaTex(texMesa,1.5f, 0.6f, 0.1f);
             glPopMatrix();
             
-            // Puxador  ajustado para a nova parede frontal
+            // Puxador 
             glPushMatrix();
                 glTranslatef(-0.8f, 0.0f, 0.0f); 
-                matMetal(0.1f, 0.1f, 0.1f);
+                matMetal(0.7f, 0.7f, 0.7f);
                 glutSolidSphere(0.1, 10, 10);
             glPopMatrix();
 
@@ -832,7 +787,7 @@ void desenhaCamaEMovel(){
                 glTranslatef(-0.25f, 0.15f, 0.0f); 
                 glRotatef(-90.0f,0.0f,1.0f,.0f);
                 // Capa Preta
-                matTecido(1.0f, 1.0f, 1.0f); // Branco reflete a imagem fielmente
+                matTecido(1.0f, 1.0f, 1.0f);
                 glEnable(GL_TEXTURE_2D);
                 glBindTexture(GL_TEXTURE_2D, texDN);
                 glPushMatrix();
@@ -848,7 +803,7 @@ void desenhaCamaEMovel(){
                     glScalef(0.38f, 0.01f, 0.48f); // Levemente menor que a capa
                     glutSolidCube(1.0f);
                 glPopMatrix();
-                
+                glDisable(GL_TEXTURE_2D);
             glPopMatrix(); // Fim do livro
         glPopMatrix(); // Fecha gaveta
 
@@ -875,7 +830,7 @@ void desenhaCamaEMovel(){
                 glTranslatef(0.0f, 0.65f, 0.0f); // dentro da cupula
                 
                 // Define que a luz GL_LIGHT0 nasce exatamente desta coordenada
-                float posLuzAbajur[] = {0.0f, 0.0f, 0.0f, 1.0f};
+                float posLuzAbajur[] = {0.0f, 0.5f, 0.0f, 1.0f};
                 glLightfv(GL_LIGHT1, GL_POSITION, posLuzAbajur);
 
                 // EFEITO DA LUZ NO ABAJUR
@@ -909,9 +864,9 @@ void desenhaCamaEMovel(){
                 }
 
                 glRotatef(-90.0f, 1.0f, 0.0f, 0.0f); 
-                GLUquadric* quadAbajur = gluNewQuadric();
-                gluCylinder(quadAbajur, 0.4, 0.15, 0.5, 16, 16);
-                gluDeleteQuadric(quadAbajur);
+                static GLUquadric* qAbajur = NULL;
+                if (!qAbajur) qAbajur = gluNewQuadric();
+                gluCylinder(qAbajur, 0.4, 0.15, 0.5, 16, 16);
                 
                 // Desliga a emissão para não afetar os próximos objetos
                 float semEmissaoCupula[] = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -930,17 +885,29 @@ void desenhaCadeira(){
         //assento
         glPushMatrix();
             glTranslatef(0.0f, 1.2f, 0.0f); 
-            matCouro(0.2f, 0.3f, 0.4f);
-            glScalef(1.2f, 0.2f, 1.0f);     
-            glutSolidCube(1.0f);
+            matCouro(1.0f, 1.0f, 1.0f); 
+            
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, texCouro); 
+            
+            glScalef(1.2f, 0.2f, 1.0f);
+            cuboTex();
+            
+            glDisable(GL_TEXTURE_2D);
         glPopMatrix();
 
         //encosto
         glPushMatrix();
-            glTranslatef(0.0f, 1.7f, 0.45f); //atras do assento
-            matCouro(0.2f, 0.3f, 0.4f);
+            glTranslatef(0.0f, 1.7f, 0.45f); 
+            matCouro(1.0f, 1.0f, 1.0f);
+            
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, texCouro); 
+            
             glScalef(1.2f, 1.0f, 0.15f);
-            glutSolidCube(1.0f);
+            cuboTex();
+            
+            glDisable(GL_TEXTURE_2D);
         glPopMatrix();
 
         //apoio braço esq
@@ -1064,12 +1031,11 @@ void desenhaAcessorio(){
         glPushMatrix();
             // Transforma a esfera
             glScalef(0.12f, 0.06f, 0.18f); 
-            esferaTex(texMouse, 1.0f);     
+            esferaTex(texListras, 1.0f);     
         glPopMatrix();
 
         // Scroll
         glPushMatrix();
-            // Acompanha a descida e avança para a curva frontal do rato
             glTranslatef(0.0f, 0.06f, -0.12f); 
             matMetal(0.1f, 0.1f, 0.1f);        
             glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
@@ -1082,7 +1048,7 @@ void desenhaAcessorio(){
         glTranslatef(-1.0f, 2.13f, -5.5f);
         glRotatef(-90.0f, 1, 0, 0);
         matCeramica(1, 1, 1);
-        cilindroTex(texMouse, 0.15f, 0.15f, 0.3f);
+        cilindroTex(texCaneca, 0.15f, 0.15f, 0.3f);
     glPopMatrix();
 }
 
@@ -1145,7 +1111,7 @@ void desenhaMesa(){
             caixaTex(texMesa, 4.0f, 0.2f, 2.0f);  // aplica textura
         glPopMatrix();
         
-        // Perna Fesq (Larg: 0.2, Alt: 2.0, Prof: 0.2)
+        // Perna Fesq 
         glPushMatrix();
             glTranslatef(-1.8f, 1.0f, 0.8f);
             caixaTex(texMesa, 0.2f, 2.0f, 0.2f);

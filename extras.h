@@ -1,11 +1,11 @@
 // extras.h - texturas, sala texturizada, colisao, animacao suave, cortinas, luz da TV e HUD
-// Incluir no main.cpp DEPOIS das variaveis globais e das funcoes material()/matXxx().
 #ifndef EXTRAS_H
 #define EXTRAS_H
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+
 
 #ifndef GL_SEPARATE_SPECULAR_COLOR
 #define GL_LIGHT_MODEL_COLOR_CONTROL 0x81F8
@@ -21,7 +21,7 @@ float anguloCadeiraAlvo = 0.0f;
 bool  mostraHUD         = true;
 
 GLuint texChao, texParede, texTV, texMonitor;
-GLuint texQuadroPaisagem, texQuadroAbstrato, texTapete, texCortina, texColcha, texMesa, texLivro, texDN,texTeclado,texMouse,texMadeira;
+GLuint texQuadroPaisagem, texCaneca, texCama, texQuadroAbstrato, texMoldura, texCouro, texJanela, texTapete, texCortina, texColcha, texMesa, texLivro, texDN,texTeclado,texAlgodao,texMadeira;
 
 // ======================= TEXTURAS PROCEDURAIS =======================
 static void px(unsigned char* d, int w, int x, int y, int r, int g, int b) {
@@ -228,7 +228,7 @@ void cuboTex() {
 }
 // ======================= PLANO TEXTURIZADO SUBDIVIDIDO =======================
 // Origem O, vetores U e V (arestas), normal N, repeticoes de textura e subdivisoes.
-// A subdivisao melhora a iluminacao por vertice (brilho especular aparece em planos grandes).
+// A subdivisao melhora a iluminacao por vertice.
 void planoTex(GLuint tex,
               float ox, float oy, float oz,
               float ux, float uy, float uz,
@@ -239,6 +239,7 @@ void planoTex(GLuint tex,
     glBindTexture(GL_TEXTURE_2D, tex);
     glNormal3f(nx, ny, nz);
     glBegin(GL_QUADS);
+    if (tex) { glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, tex); }
     for (int i = 0; i < dU; i++)
         for (int j = 0; j < dV; j++) {
             float a0 = (float)i / dU, a1 = (float)(i + 1) / dU;
@@ -279,7 +280,6 @@ void desenhaTapete() {
     planoTex(texTapete, -2.5f,0.02f,-4.8f,  5,0,0,  0,0,4,  0,1,0,  1,1, 4,4);
 }
 
-// chamar dentro da matriz da cama, depois do colchao
 void desenhaColcha() {
     matTecido(1, 1, 1);
     planoTex(texColcha, -1.4f,1.205f,-2.9f,  2.8f,0,0,  0,0,5.8f,  0,1,0,  3,6, 4,8);
@@ -297,11 +297,11 @@ void telaTV() {
     glMatrixMode(GL_MODELVIEW);
 }
 
-// Tela do monitor (coordenadas locais do painel)
+// Tela do monitor 
 void telaMonitor() {
     planoTex(texMonitor, -0.95f,-0.55f,0.121f,  1.9f,0,0,  0,1.1f,0,  0,0,1,  1,1, 4,4);
 }
-
+#include "texturas.h"
 // ======================= CORTINAS (transparentes, desenhadas por ultimo) =======================
 void desenhaCortinas() {
     float esc = 1.6f + (0.3f - 1.6f) * cortinaPos;
@@ -317,13 +317,11 @@ void desenhaCortinas() {
 
         glPushMatrix();   // esquerda
             glTranslatef(-1.6f + esc / 2.0f, 0.0f, 0.1f);
-            glScalef(esc, 2.2f, 0.05f);
-            glutSolidCube(1.0f);
+            caixaTex(texCortina,esc, 2.2f, 0.05f);
         glPopMatrix();
         glPushMatrix();   // direita
             glTranslatef(1.6f - esc / 2.0f, 0.0f, 0.1f);
-            glScalef(esc, 2.2f, 0.05f);
-            glutSolidCube(1.0f);
+            caixaTex(texCortina,esc, 2.2f, 0.05f);
         glPopMatrix();
     glPopMatrix();
 
@@ -352,7 +350,7 @@ bool livre(float x, float z) {
     return true;
 }
 
-// Move testando cada eixo separado (desliza ao longo da parede)
+// Move testando cada eixo separado 
 void mover(float dx, float dz) {
     if (livre(camX + dx, camZ)) camX += dx;
     if (livre(camX, camZ + dz)) camZ += dz;
