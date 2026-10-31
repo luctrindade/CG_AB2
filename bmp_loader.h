@@ -1,4 +1,4 @@
-// bmp_loader.h - carregador de imagens BMP 24 bits (codigo proprio, sem bibliotecas)
+// bmp_loader.h - carregador de texturas BMP 24 bits (codigo proprio, sem bibliotecas)
 // Fluxo
 //   arquivo .bmp -> vetor de bytes RGB (leBMP) -> gluBuild2DMipmaps -> textura
 #ifndef BMP_LOADER_H
@@ -65,21 +65,21 @@ GLuint carregaTexturaBMP(const char* arq, GLuint reserva) {
 
 //24 bits
 void carregaImagens() {
-    texQuadroPaisagem = carregaTexturaBMP("imagens/van_gogh.bmp",  texQuadroPaisagem);
-    texQuadroAbstrato = carregaTexturaBMP("imagens/fernando_lopes.bmp", texQuadroAbstrato);
-    texDN = carregaTexturaBMP("imagens/death_note.bmp", 0);
-    texTV = carregaTexturaBMP("imagens/simpsons.bmp", texTV);
-    texMonitor = carregaTexturaBMP("imagens/adventure_time.bmp", texMonitor);
-    texAlgodao = carregaTexturaBMP("imagens/algodao.bmp", 0);
-    texTeclado = carregaTexturaBMP("imagens/teclado.bmp", 0);
-    texMesa = carregaTexturaBMP("imagens/granito.bmp", 0);
-    texMadeira = carregaTexturaBMP("imagens/redCedar.bmp", texMovel);
-    texCortina = carregaTexturaBMP("imagens/cortina.bmp", 0);
-    texJanela = carregaTexturaBMP("imagens/janela.bmp", 0);
-    texCouro = carregaTexturaBMP("imagens/couro.bmp", 0);
-    texMoldura = carregaTexturaBMP("imagens/moldura.bmp", 0);
-    texCaneca = carregaTexturaBMP("imagens/steel.bmp",0 );
-    texCama = carregaTexturaBMP("imagens/blueT.bmp",0);
+    texQuadroPaisagem = carregaTexturaBMP("texturas/van_gogh.bmp",  texQuadroPaisagem);
+    texQuadroAbstrato = carregaTexturaBMP("texturas/fernando_lopes.bmp", texQuadroAbstrato);
+    texDN = carregaTexturaBMP("texturas/death_note.bmp", 0);
+    texTV = carregaTexturaBMP("texturas/simpsons.bmp", texTV);
+    texMonitor = carregaTexturaBMP("texturas/adventure_time.bmp", texMonitor);
+    texAlgodao = carregaTexturaBMP("texturas/algodao.bmp", 0);
+    texTeclado = carregaTexturaBMP("texturas/teclado.bmp", 0);
+    texMesa = carregaTexturaBMP("texturas/granito.bmp", 0);
+    texMadeira = carregaTexturaBMP("texturas/redCedar.bmp", texMovel);
+    texCortina = carregaTexturaBMP("texturas/cortina.bmp", 0);
+    texJanela = carregaTexturaBMP("texturas/janela.bmp", 0);
+    texCouro = carregaTexturaBMP("texturas/leather.bmp", 0);
+    texMoldura = carregaTexturaBMP("texturas/moldura.bmp", 0);
+    texCaneca = carregaTexturaBMP("texturas/steel.bmp",0 );
+    texCama = carregaTexturaBMP("texturas/blueT.bmp",0);
 }
 
 #endif

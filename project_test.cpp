@@ -47,6 +47,7 @@ void matCouro (float r, float g, float b) { material(r, g, b, 0.8f, 50.0f); }
 #include "extras.h"
 #include "texturas.h"
 #include "bmp_loader.h"
+#include "sombras.h"
 
 void gerenciaMouse(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON) {
@@ -267,10 +268,10 @@ void desenhaQuadrosEsquerda() {
             planoTex(tex, -0.75f,-1.0f,0.03f,  1.5f,0,0,  0,2.0f,0,  0,0,1,  1,1, 4,4);
             // Moldura Escura
             matMadeira(0.2f, 0.1f, 0.1f);
-            glPushMatrix(); glTranslatef(0.0f, 1.05f, 0.0f); glScalef(1.6f, 0.1f, 0.1f); glutSolidCube(1.0f); glPopMatrix();
-            glPushMatrix(); glTranslatef(0.0f, -1.05f, 0.0f); glScalef(1.6f, 0.1f, 0.1f); glutSolidCube(1.0f); glPopMatrix();
-            glPushMatrix(); glTranslatef(-0.75f, 0.0f, 0.0f); glScalef(0.1f, 2.0f, 0.1f); glutSolidCube(1.0f); glPopMatrix();
-            glPushMatrix(); glTranslatef(0.75f, 0.0f, 0.0f); glScalef(0.1f, 2.0f, 0.1f); glutSolidCube(1.0f); glPopMatrix();
+            glPushMatrix(); glTranslatef(0.0f, 1.05f, 0.0f); caixaTex(texMadeira,1.6f, 0.1f, 0.1f); glPopMatrix();
+            glPushMatrix(); glTranslatef(0.0f, -1.05f, 0.0f); caixaTex(texMadeira,1.6f, 0.1f, 0.1f); glPopMatrix();
+            glPushMatrix(); glTranslatef(-0.75f, 0.0f, 0.0f); caixaTex(texMadeira,0.1f, 2.0f, 0.1f); glPopMatrix();
+            glPushMatrix(); glTranslatef(0.75f, 0.0f, 0.0f); caixaTex(texMadeira,0.1f, 2.0f, 0.1f); glPopMatrix();
         };
         
         // Quadro 1
@@ -491,30 +492,26 @@ void desenhaQuadro() {
         matTecido(1, 1, 1);
         planoTex(texQuadroPaisagem, -0.03f,-1.0f,-1.5f,  0,0,3.0f,  0,2.0f,0,  -1,0,0,  1,1, 6,4);
         // moldura escura
-        glColor3f(0.2f, 0.1f, 0.1f);
+        matMadeira(0.2f, 0.1f, 0.1f);
         
         // topo e Base da Moldura
         glPushMatrix();
             glTranslatef(0.0f, 1.05f, 0.0f);
-            glScalef(0.1f, 0.1f, 3.2f);
-            glutSolidCube(1.0f);
+            caixaTex(texMadeira,0.1f, 0.1f, 3.2f);
         glPopMatrix();
         glPushMatrix();
             glTranslatef(0.0f, -1.05f, 0.0f);
-            glScalef(0.1f, 0.1f, 3.2f);
-            glutSolidCube(1.0f);
+            caixaTex(texMadeira,0.1f, 0.1f, 3.2f);
         glPopMatrix();
 
         // lateral moldura 
         glPushMatrix();
             glTranslatef(0.0f, 0.0f, -1.55f);
-            glScalef(0.1f, 2.0f, 0.1f);
-            glutSolidCube(1.0f);
+            caixaTex(texMadeira,0.1f, 2.0f, 0.1f);
         glPopMatrix();
         glPushMatrix();
             glTranslatef(0.0f, 0.0f, 1.55f);
-            glScalef(0.1f, 2.0f, 0.1f);
-            glutSolidCube(1.0f);
+            caixaTex(texMadeira,0.1f, 2.0f, 0.1f);
         glPopMatrix();
 
     glPopMatrix();
@@ -887,27 +884,18 @@ void desenhaCadeira(){
             glTranslatef(0.0f, 1.2f, 0.0f); 
             matCouro(1.0f, 1.0f, 1.0f); 
             
-            glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, texCouro); 
             
-            glScalef(1.2f, 0.2f, 1.0f);
-            cuboTex();
+            caixaTex(texCouro, 1.2f, 0.2f, 1.0f);
             
-            glDisable(GL_TEXTURE_2D);
+            
         glPopMatrix();
 
         //encosto
         glPushMatrix();
             glTranslatef(0.0f, 1.7f, 0.45f); 
             matCouro(1.0f, 1.0f, 1.0f);
+            caixaTex(texCouro,1.2f, 1.0f, 0.15f);
             
-            glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, texCouro); 
-            
-            glScalef(1.2f, 1.0f, 0.15f);
-            cuboTex();
-            
-            glDisable(GL_TEXTURE_2D);
         glPopMatrix();
 
         //apoio braço esq
@@ -915,15 +903,15 @@ void desenhaCadeira(){
             //haste vertical
             glPushMatrix();
                 glTranslatef(-0.55f, 1.35f, 0.1f);
-                matMetal(0.1f, 0.1f, 0.1f);
-                glScalef(0.05f, 0.3f, 0.05f);
-                glutSolidCube(1.0f);
+                matMetal(0.5f, 0.5f, 0.5f);
+                caixaTex(texCaneca,0.05f, 0.3f, 0.05f);
             glPopMatrix();
             //apoio horizontal
             glPushMatrix();
                 glTranslatef(-0.55f, 1.5f, 0.0f);
-                glScalef(0.1f, 0.05f, 0.6f);
-                glutSolidCube(1.0f);
+                matCouro(1.0f, 1.0f, 1.0f);
+                caixaTex(texCouro,0.1f, 0.05f, 0.6f);
+                //glutSolidCube(1.0f);
             glPopMatrix();
         glPopMatrix();
 
@@ -932,15 +920,16 @@ void desenhaCadeira(){
             //haste vertical
             glPushMatrix();
                 glTranslatef(0.55f, 1.35f, 0.1f);
-                matMetal(0.1f, 0.1f, 0.1f);
-                glScalef(0.05f, 0.3f, 0.05f);
-                glutSolidCube(1.0f);
+                matMetal(0.5f, 0.5f, 0.5f);
+                caixaTex(texCaneca,0.05f, 0.3f, 0.05f);
+                //glutSolidCube(1.0f);
             glPopMatrix();
             //apoio horizontal
             glPushMatrix();
                 glTranslatef(0.55f, 1.5f, 0.0f);
-                glScalef(0.1f, 0.05f, 0.6f);
-                glutSolidCube(1.0f);
+                matCouro(1.0f, 1.0f, 1.0f);
+                caixaTex(texCouro,0.1f, 0.05f, 0.6f);
+                //glutSolidCube(1.0f);
             glPopMatrix();
         glPopMatrix();
         
@@ -1137,8 +1126,41 @@ void desenhaMesa(){
     glPopMatrix();
 }
 
+void desenhaRelogio() {
+    glPushMatrix();
+        glTranslatef(7.9f, 4.0f, -4.3f); // Centralizado na parede do fundo
+        glRotatef(-90.0f,.0f,1.0f,.0f);
+        // Borda do relogio
+        matPlastico(0.1f, 0.1f, 0.1f);
+        gluCylinder(qTex, 0.6, 0.6, 0.1, 32, 1);
+        
+        // Fundo (Mostrador)
+        glTranslatef(0.0f, 0.0f, 0.05f);
+        matTecido(0.9f, 0.9f, 0.9f);
+        gluDisk(qTex, 0.0, 0.6, 32, 1);
+        
+        // Ponteiros
+        float tempo = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
+        glTranslatef(0.0f, 0.0f, 0.01f);
+        matMetal(0.1f, 0.1f, 0.1f);
+        
+        glPushMatrix(); // Minutos
+            glRotatef(-tempo * 50.0f, 0.0f, 0.0f, 1.0f);
+            glTranslatef(0.0f, 0.2f, 0.0f);
+            glScalef(0.02f, 0.4f, 0.02f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+        
+        glPushMatrix(); // Horas
+            glRotatef(-tempo * 5.0f, 0.0f, 0.0f, 1.0f);
+            glTranslatef(0.0f, 0.15f, 0.0f);
+            glScalef(0.03f, 0.3f, 0.02f);
+            glutSolidCube(1.0f);
+        glPopMatrix();
+    glPopMatrix();
+}
 void display(){
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glLoadIdentity();
     gluLookAt(camX,camY,camZ, camX + dirX,camY + dirY,camZ + dirZ,.0f,1.0f,.0f);
     float posicaoLuzTeto[] = {0.0f, 5.4f, 0.0f, 1.0f};
@@ -1148,6 +1170,7 @@ void display(){
     
     desenhaSala();
     desenhaTapete();
+    desenhaSombras();
     desenhaMesa();
     desenhaMonitor();
     desenhaAcessorio();
@@ -1161,7 +1184,8 @@ void display(){
     desenhaArmario();
     desenhaQuadrosEsquerda();
     desenhaLampada();
-    
+    desenhaRelogio();
+
     desenhaCortinas();
     desenhaHUD();
     
@@ -1213,12 +1237,13 @@ void init() {
     glShadeModel(GL_SMOOTH);
     initExtras();
     initTexAvancadas();
+    initSombras();
     carregaImagens();
 }
 
 int main(int argc, char** argv){
     glutInit(&argc,argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_STENCIL);
     glutInitWindowSize(800, 600);
     glutCreateWindow("Escritorio");
 
