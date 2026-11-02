@@ -67,15 +67,16 @@ void carregaImagens() {
     texDN = carregaTexturaBMP("texturas/death_note.bmp", 0);
     texTV = carregaTexturaBMP("texturas/simpsons.bmp", texTV);
     texMonitor = carregaTexturaBMP("texturas/desktop.bmp", texMonitor);
-    texAlgodao = carregaTexturaBMP("texturas/algodao.bmp", 0);
+    texAlgodao = carregaTexturaBMP("texturas/algodao.bmp", texColcha);
     texTeclado = carregaTexturaBMP("texturas/teclado.bmp", 0);
-    texMesa = carregaTexturaBMP("texturas/granito.bmp", 0);
+    texMesa = carregaTexturaBMP("texturas/granito.bmp", texLivro);
     texMadeira = carregaTexturaBMP("texturas/redCedar.bmp", texMovel);
-    texCortina = carregaTexturaBMP("texturas/cortina.bmp", 0);
+    texCortina = carregaTexturaBMP("texturas/cortina.bmp", texListras);
     texJanela = carregaTexturaBMP("texturas/janela.bmp", 0);
-    texCouro = carregaTexturaBMP("texturas/leather.bmp", 0);
-    texMoldura = carregaTexturaBMP("texturas/moldura.bmp", 0);
-    texCaneca = carregaTexturaBMP("texturas/steel.bmp",0 );
-    texCama = carregaTexturaBMP("texturas/blueT.bmp",0);
-    texAba = carregaTexturaBMP("texturas/abaporu.bmp",0 );
+    texCouro = carregaTexturaBMP("texturas/leather.bmp", texLivro);
+    texMoldura = carregaTexturaBMP("texturas/moldura.bmp", texLivro);
+    texCaneca = carregaTexturaBMP("texturas/steel.bmp",texLivro );
+    texCama = carregaTexturaBMP("texturas/blueT.bmp",texColcha);
+    texAba = carregaTexturaBMP("texturas/abaporu.bmp", texQuadroAbstrato );
+    texRack = carregaTexturaBMP("texturas/oak.bmp", texMovel);
 }

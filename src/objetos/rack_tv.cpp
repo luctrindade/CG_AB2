@@ -78,36 +78,31 @@ void desenhaRackETV() {
         glPushMatrix();
             glTranslatef(-0.2f, 0.15f, -1.3f);
             glRotatef(15.0f, 1.0f, 0.0f, 0.0f);
-            glScalef(0.08f, 0.3f, 0.08f);
-            glutSolidCube(1.0f);
+            caixaTex(texRack,0.08f, 0.3f, 0.08f);
         glPopMatrix();
         // Traseiro Direito
         glPushMatrix();
             glTranslatef(-0.2f, 0.15f, 1.3f);
             glRotatef(-15.0f, 1.0f, 0.0f, 0.0f);
-            glScalef(0.08f, 0.3f, 0.08f);
-            glutSolidCube(1.0f);
+            caixaTex(texRack,0.08f, 0.3f, 0.08f);
         glPopMatrix();
         // Dianteiro Esquerdo 
         glPushMatrix();
             glTranslatef(0.2f, 0.15f, -1.3f);
             glRotatef(15.0f, 1.0f, 0.0f, 0.0f);
-            glScalef(0.08f, 0.3f, 0.08f);
-            glutSolidCube(1.0f);
+            caixaTex(texRack,0.08f, 0.3f, 0.08f);
         glPopMatrix();
         // Dianteiro Direito
         glPushMatrix();
             glTranslatef(0.2f, 0.15f, 1.3f);
             glRotatef(-15.0f, 1.0f, 0.0f, 0.0f);
-            glScalef(0.08f, 0.3f, 0.08f);
-            glutSolidCube(1.0f);
+            caixaTex(texRack,0.08f, 0.3f, 0.08f);
         glPopMatrix();
 
         //  BASE DO RACK 
         glPushMatrix();
             glTranslatef(0.0f, 0.35f, 0.0f);
-            glScalef(0.7f, 0.1f, 2.9f);
-            glutSolidCube(1.0f);
+            caixaTex(texRack,0.72f, 0.1f, 2.86f);
         glPopMatrix();
 
         //  CORPO DO RACK (dividido em 3 compartimentos internos)
@@ -162,8 +157,8 @@ void desenhaRackETV() {
         glPushMatrix();
             matMadeira(0.6f, 0.45f, 0.3f);
             glTranslatef(0.01f, 1.15f, 0.0f);
-            glScalef(0.72f, 0.06f, 2.82f); // Ligeiramente mais largo em X para destacar sobre o tampo
-            glutSolidCube(1.0f);
+            caixaTex(texRack,0.72f, 0.06f, 2.82f); // Ligeiramente mais largo em X para destacar sobre o tampo
+            //glutSolidCube(1.0f);
         glPopMatrix();
 
         desenhaModem();

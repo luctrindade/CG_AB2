@@ -6,7 +6,7 @@
 
 // identificadores das texturas
 extern GLuint texChao, texParede, texTV, texMonitor;
-extern GLuint texQuadroPaisagem, texCaneca, texAba, texCama, texQuadroAbstrato, texMoldura, texCouro,
+extern GLuint texQuadroPaisagem, texCaneca, texAba, texRack, texCama, texQuadroAbstrato, texMoldura, texCouro,
               texJanela, texTapete, texCortina, texColcha, texMesa, texLivro, texDN,
               texTeclado, texAlgodao, texMadeira;
 extern GLuint texListras, texXadrez, texMovel;

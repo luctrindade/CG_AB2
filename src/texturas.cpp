@@ -4,7 +4,7 @@
 #include "texturas.h"
 
 GLuint texChao, texParede, texTV, texMonitor;
-GLuint texQuadroPaisagem, texCaneca, texCama, texAba, texQuadroAbstrato, texMoldura, texCouro, texJanela, texTapete, texCortina, texColcha, texMesa, texLivro, texDN,texTeclado,texAlgodao,texMadeira;
+GLuint texQuadroPaisagem, texCaneca, texCama, texRack, texAba, texQuadroAbstrato, texMoldura, texCouro, texJanela, texTapete, texCortina, texColcha, texMesa, texLivro, texDN,texTeclado,texAlgodao,texMadeira;
 GLuint texListras, texXadrez, texMovel;
 GLUquadric* qTex = NULL;
 
