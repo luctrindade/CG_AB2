@@ -16,6 +16,11 @@ void atualiza(int) {
     gavetaX       = aproxima(gavetaX,       gavetaAlvo,        0.04f);
     cortinaPos    = aproxima(cortinaPos,    cortinaAlvo,       0.03f);
     anguloCadeira = aproxima(anguloCadeira, anguloCadeiraAlvo, 3.0f);
+
+    for (int i = 0; i < 3; i++) {
+        anguloPortaRack[i] = aproxima(anguloPortaRack[i], anguloPortaRackAlvo[i], 3.0f);
+    }
+
     glutPostRedisplay();
     glutTimerFunc(16, atualiza, 0);
 }

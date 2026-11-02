@@ -29,5 +29,8 @@ extern float cortinaPos;             // 0 = fechada, 1 = aberta
 extern float cortinaAlvo;
 extern float anguloCadeiraAlvo;
 extern bool  mostraHUD;
+extern bool  portaRackAberta[3];
+extern float anguloPortaRack[3];
+extern float anguloPortaRackAlvo[3];
 
 #endif

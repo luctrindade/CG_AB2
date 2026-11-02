@@ -28,7 +28,7 @@ void movimentoMouse(int x, int y) {
     ultimoMouseX = x;
     ultimoMouseY = y;
 
-    float sensibilidade = 0.005f; 
+    float sensibilidade = 0.002f; 
     angulo += deltaX * sensibilidade; 
     pitch -= deltaY * sensibilidade;  
 
@@ -45,7 +45,7 @@ void movimentoMouse(int x, int y) {
 void teclado(unsigned char key, int x_mouse, int y_mouse){
     float len = sqrt(dirX*dirX + dirZ*dirZ);
     float fx = dirX / len, fz = dirZ / len;   // sem perder velocidade ao olhar para cima/baixo
-    float velocidade = 0.5f;
+    float velocidade = 0.2f;
     switch(tolower(key)){
         case 'w': mover( fx*velocidade,  fz*velocidade); break;
         case 's': mover(-fx*velocidade, -fz*velocidade); break;
@@ -106,6 +106,17 @@ void teclado(unsigned char key, int x_mouse, int y_mouse){
             if (distJanela < 4.0f) {
                 cortinaAberta = !cortinaAberta;
                 cortinaAlvo = cortinaAberta ? 1.0f : 0.0f;
+            }
+            break;
+        }
+        case '1':
+        case '2':
+        case '3': {
+            float distRack = sqrt(pow(camX - 5.5f, 2) + pow(camZ - 7.0f, 2));
+            if (distRack < 4.5f) {
+                int i = key - '1'; // Converte '1','2','3' para índice 0, 1 ou 2
+                portaRackAberta[i] = !portaRackAberta[i];
+                anguloPortaRackAlvo[i] = portaRackAberta[i] ? 90.0f : 0.0f;
             }
             break;
         }

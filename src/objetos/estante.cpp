@@ -123,7 +123,7 @@ void desenhaEstante() {
         glPopMatrix();
         glPushMatrix();
             matTecido(.3f,.5f,.2f);
-            glTranslatef(-0.17f, 3.2f, 0.0f);
+            glTranslatef(-0.176f, 3.2f, 0.0f);
             glRotatef(25.0f, 0.0f, 0.0f, 1.0f);
             glScalef(0.12f, 0.45f, 0.6f);
             cuboTex();

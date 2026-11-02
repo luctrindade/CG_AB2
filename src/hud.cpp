@@ -20,7 +20,7 @@ void desenhaHUD() {
 
     glColor3f(1.0f, 1.0f, 0.6f);
     texto(10, h - 18, "W/A/S/D: mover | Mouse (segurar botao esquerdo): olhar");
-    texto(10, h - 34, "E: porta / gaveta / TV / monitor | F: luzes | C: cortina | R: cadeira | H: ocultar ajuda");
+    texto(10, h - 34, "E: porta / gaveta / TV / monitor | 1/2/3: rack |F: luzes | C: cortina | R: cadeira | H: ocultar ajuda");
 
     glPopMatrix();
     glMatrixMode(GL_PROJECTION); glPopMatrix();

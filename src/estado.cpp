@@ -31,3 +31,6 @@ float cortinaPos        = 0.0f;
 float cortinaAlvo       = 0.0f;
 float anguloCadeiraAlvo = 0.0f;
 bool  mostraHUD         = true;
+bool  portaRackAberta[3]     = {false, false, false};
+float anguloPortaRack[3]     = {0.0f, 0.0f, 0.0f};
+float anguloPortaRackAlvo[3] = {0.0f, 0.0f, 0.0f};
