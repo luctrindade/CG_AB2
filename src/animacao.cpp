@@ -21,6 +21,10 @@ void atualiza(int) {
         anguloPortaRack[i] = aproxima(anguloPortaRack[i], anguloPortaRackAlvo[i], 3.0f);
     }
 
+    for (int i = 0; i < 2; i++) {
+        anguloPortaArmario[i] = aproxima(anguloPortaArmario[i], anguloPortaArmarioAlvo[i], 3.0f);
+    }
+
     glutPostRedisplay();
     glutTimerFunc(16, atualiza, 0);
 }

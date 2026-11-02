@@ -76,7 +76,7 @@ void desenhaQuadrosEsquerda() {
         // Quadro 2 
         glPushMatrix();
             glTranslatef(1.5f, 0.5f, 0.0f); 
-            desenhaUmQuadro(texQuadroPaisagem);
+            desenhaUmQuadro(texAba);
         glPopMatrix();
 
     glPopMatrix();

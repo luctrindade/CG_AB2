@@ -34,3 +34,6 @@ bool  mostraHUD         = true;
 bool  portaRackAberta[3]     = {false, false, false};
 float anguloPortaRack[3]     = {0.0f, 0.0f, 0.0f};
 float anguloPortaRackAlvo[3] = {0.0f, 0.0f, 0.0f};
+bool  portaArmarioAberta[2]     = {false, false};
+float anguloPortaArmario[2]     = {0.0f, 0.0f};
+float anguloPortaArmarioAlvo[2] = {0.0f, 0.0f};

@@ -66,7 +66,7 @@ void carregaImagens() {
     texQuadroAbstrato = carregaTexturaBMP("texturas/fernando_lopes.bmp", texQuadroAbstrato);
     texDN = carregaTexturaBMP("texturas/death_note.bmp", 0);
     texTV = carregaTexturaBMP("texturas/simpsons.bmp", texTV);
-    texMonitor = carregaTexturaBMP("texturas/adventure_time.bmp", texMonitor);
+    texMonitor = carregaTexturaBMP("texturas/desktop.bmp", texMonitor);
     texAlgodao = carregaTexturaBMP("texturas/algodao.bmp", 0);
     texTeclado = carregaTexturaBMP("texturas/teclado.bmp", 0);
     texMesa = carregaTexturaBMP("texturas/granito.bmp", 0);
@@ -77,4 +77,5 @@ void carregaImagens() {
     texMoldura = carregaTexturaBMP("texturas/moldura.bmp", 0);
     texCaneca = carregaTexturaBMP("texturas/steel.bmp",0 );
     texCama = carregaTexturaBMP("texturas/blueT.bmp",0);
+    texAba = carregaTexturaBMP("texturas/abaporu.bmp",0 );
 }

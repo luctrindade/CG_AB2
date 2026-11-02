@@ -62,7 +62,7 @@ void teclado(unsigned char key, int x_mouse, int y_mouse){
             float distPorta   = sqrt(pow(camX + 5.5f, 2) + pow(camZ - 8.0f, 2));
             float distTV      = sqrt(pow(camX - 5.5f, 2) + pow(camZ - 7.0f, 2));
             float distMonitor = sqrt(pow(camX, 2) + pow(camZ + 6.0f, 2));
-
+            float distArmario = sqrt(pow(camX + 7.2f, 2) + pow(camZ - 3.0f, 2));
             float minDist = 999.0f;
             int objID = -1;
 
@@ -70,6 +70,7 @@ void teclado(unsigned char key, int x_mouse, int y_mouse){
             if (distPorta < 4.0f && distPorta < minDist)     { minDist = distPorta;   objID = 1; }
             if (distTV < 4.0f && distTV < minDist)           { minDist = distTV;      objID = 2; }
             if (distMonitor < 3.5f && distMonitor < minDist) { minDist = distMonitor; objID = 3; }
+            if (distArmario < 4.0f && distArmario < minDist) { minDist = distArmario; objID = 4; } 
 
             if (objID == 0) {
                 gavetaAberta = !gavetaAberta;
@@ -82,6 +83,12 @@ void teclado(unsigned char key, int x_mouse, int y_mouse){
                 if (tvLigada) glEnable(GL_LIGHT2); else glDisable(GL_LIGHT2);
             } else if (objID == 3) {
                 monitorLigado = !monitorLigado;
+            } else if (objID == 4) { 
+                bool novoEstado = !(portaArmarioAberta[0] || portaArmarioAberta[1]);
+                for (int i = 0; i < 2; i++) {
+                    portaArmarioAberta[i] = novoEstado;
+                    anguloPortaArmarioAlvo[i] = novoEstado ? 95.0f : 0.0f;
+                }
             }
             break;
         }
@@ -110,7 +117,14 @@ void teclado(unsigned char key, int x_mouse, int y_mouse){
             break;
         }
         case '1':
-        case '2':
+        case '2':{
+            float distArmario = sqrt(pow(camX + 7.2f, 2) + pow(camZ - 3.0f, 2));
+            if (distArmario < 4.0f) {
+                int i = key - '1'; 
+                portaArmarioAberta[i] = !portaArmarioAberta[i];
+                anguloPortaArmarioAlvo[i] = portaArmarioAberta[i] ? 95.0f : 0.0f;
+            }
+        }    
         case '3': {
             float distRack = sqrt(pow(camX - 5.5f, 2) + pow(camZ - 7.0f, 2));
             if (distRack < 4.5f) {

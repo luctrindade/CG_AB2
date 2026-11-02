@@ -32,5 +32,8 @@ extern bool  mostraHUD;
 extern bool  portaRackAberta[3];
 extern float anguloPortaRack[3];
 extern float anguloPortaRackAlvo[3];
+extern bool  portaArmarioAberta[2];
+extern float anguloPortaArmario[2];
+extern float anguloPortaArmarioAlvo[2];
 
 #endif
