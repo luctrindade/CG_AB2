@@ -89,7 +89,6 @@ void desenhaSombras() {
         desenhaRackETV();
         desenhaAcessorio();
         desenhaPorta();
-        desenhaRackETV();
     glPopMatrix();
 
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
