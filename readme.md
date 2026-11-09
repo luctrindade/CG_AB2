@@ -175,4 +175,4 @@ Para adicionar um objeto: crie `src/objetos/novo.cpp` (com `#include "comum.h"`)
 
 As técnicas implementadas estão descritas no relatório que acompanha este repositório (`Relatório - CG.pdf`).
 
-Vídeo: https://drive.google.com/file/d/1dCo3XKSdZ8ce9PQSNzOiL6s3cAG6rR3t/view?usp=sharing
+Vídeo: https://youtu.be/euC4xfooO2o
