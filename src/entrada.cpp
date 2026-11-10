@@ -15,8 +15,10 @@ void gerenciaMouse(int button, int state, int x, int y) {
             mousePressionado = true;
             ultimoMouseX = x; // Grava onde o clique começou
             ultimoMouseY = y;
+            glutSetCursor(GLUT_CURSOR_NONE); // Esconde o cursor ao clicar
         } else if (state == GLUT_UP) {
             mousePressionado = false; // Soltou o clique, trava a câmera
+            glutSetCursor(GLUT_CURSOR_LEFT_ARROW); // Restaura o cursor normal
         }
     }
 }
@@ -24,11 +26,11 @@ void gerenciaMouse(int button, int state, int x, int y) {
 void movimentoMouse(int x, int y) {
     if (!mousePressionado) return; // Só move a câmera se estiver segurando o clique
 
+    // Ignora o evento gerado pelo próprio warp do cursor
+    if (x == ultimoMouseX && y == ultimoMouseY) return;
+
     float deltaX = x - ultimoMouseX;
     float deltaY = y - ultimoMouseY;
-
-    ultimoMouseX = x;
-    ultimoMouseY = y;
 
     float sensibilidade = 0.002f; 
     angulo += deltaX * sensibilidade; 
@@ -40,6 +42,9 @@ void movimentoMouse(int x, int y) {
     dirX = cos(pitch) * cos(angulo);
     dirY = sin(pitch);
     dirZ = cos(pitch) * sin(angulo);
+
+    // Trava o cursor no ponto inicial do clique para não sair da tela
+    glutWarpPointer(ultimoMouseX, ultimoMouseY);
 
     glutPostRedisplay();
 }
