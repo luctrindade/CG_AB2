@@ -152,7 +152,6 @@ void teclado(unsigned char key, int x_mouse, int y_mouse){
                 portaArmarioAberta[i] = !portaArmarioAberta[i];
                 anguloPortaArmarioAlvo[i] = portaArmarioAberta[i] ? 95.0f : 0.0f;
             }
-            break;
         }    
         case '3': {
             float distRack = sqrt(pow(camX - 5.5f, 2) + pow(camZ - 7.0f, 2));
