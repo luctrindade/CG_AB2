@@ -7,6 +7,8 @@
 #include "estado.h"
 #include "colisao.h"
 
+static bool teclas[256] = { false };
+
 void gerenciaMouse(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON) {
         if (state == GLUT_DOWN) {
@@ -42,15 +44,36 @@ void movimentoMouse(int x, int y) {
     glutPostRedisplay();
 }
 
+void tecladoUp(unsigned char key, int x_mouse, int y_mouse) {
+    teclas[(unsigned char)tolower(key)] = false;
+}
+
+void atualizaMovimento() {
+    float len = sqrt(dirX * dirX + dirZ * dirZ);
+    if (len == 0.0f) return;
+    float fx = dirX / len;
+    float fz = dirZ / len;
+
+    float moveX = 0.0f;
+    float moveZ = 0.0f;
+
+    if (teclas['w']) { moveX += fx;  moveZ += fz;  }
+    if (teclas['s']) { moveX -= fx;  moveZ -= fz;  }
+    if (teclas['d']) { moveX -= fz;  moveZ += fx;  }
+    if (teclas['a']) { moveX += fz;  moveZ -= fx;  }
+
+    float moveLen = sqrt(moveX * moveX + moveZ * moveZ);
+    if (moveLen > 0.0f) {
+        float velocidade = 0.08f;
+        mover((moveX / moveLen) * velocidade, (moveZ / moveLen) * velocidade);
+    }
+}
+
 void teclado(unsigned char key, int x_mouse, int y_mouse){
-    float len = sqrt(dirX*dirX + dirZ*dirZ);
-    float fx = dirX / len, fz = dirZ / len;   // sem perder velocidade ao olhar para cima/baixo
-    float velocidade = 0.2f;
-    switch(tolower(key)){
-        case 'w': mover( fx*velocidade,  fz*velocidade); break;
-        case 's': mover(-fx*velocidade, -fz*velocidade); break;
-        case 'd': mover(-fz*velocidade,  fx*velocidade); break;
-        case 'a': mover( fz*velocidade, -fx*velocidade); break;
+    unsigned char k = tolower(key);
+    teclas[k] = true;
+
+    switch(k){
         case 'h': mostraHUD = !mostraHUD; break;
         case 'r': {
             float dist = sqrt(pow(camX, 2) + pow(camZ + 4.0f, 2));
@@ -124,6 +147,7 @@ void teclado(unsigned char key, int x_mouse, int y_mouse){
                 portaArmarioAberta[i] = !portaArmarioAberta[i];
                 anguloPortaArmarioAlvo[i] = portaArmarioAberta[i] ? 95.0f : 0.0f;
             }
+            break;
         }    
         case '3': {
             float distRack = sqrt(pow(camX - 5.5f, 2) + pow(camZ - 7.0f, 2));

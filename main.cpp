@@ -72,6 +72,8 @@ int main(int argc, char** argv){
     glutDisplayFunc(display);
 
     glutKeyboardFunc(teclado);
+    glutKeyboardUpFunc(tecladoUp);
+    glutIgnoreKeyRepeat(1);
     glutMouseFunc(gerenciaMouse);     
     glutMotionFunc(movimentoMouse);
     glutMainLoop();
