@@ -1,3 +1,4 @@
+#include <string.h>
 // entrada.cpp - mouse (camera) e teclado (movimento e interacoes)
 #include <GL/glut.h>
 #include <ctype.h>
@@ -6,6 +7,8 @@
 #include "entrada.h"
 #include "estado.h"
 #include "colisao.h"
+
+static bool teclas[256] = { false };
 
 void gerenciaMouse(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON) {
@@ -42,15 +45,42 @@ void movimentoMouse(int x, int y) {
     glutPostRedisplay();
 }
 
+void tecladoUp(unsigned char key, int x_mouse, int y_mouse) {
+    teclas[(unsigned char)tolower(key)] = false;
+}
+
+void entradaJanela(int state) {
+    // Ao reentrar na janela, solta todas as teclas: evita "tecla presa" caso o foco
+    // tenha sido perdido (alt-tab, clique em outra janela) com W/A/S/D segurada.
+    if (state == GLUT_ENTERED) memset(teclas, 0, sizeof(teclas));
+}
+
+void atualizaMovimento() {
+    float len = sqrt(dirX * dirX + dirZ * dirZ);
+    if (len == 0.0f) return;
+    float fx = dirX / len;
+    float fz = dirZ / len;
+
+    float moveX = 0.0f;
+    float moveZ = 0.0f;
+
+    if (teclas['w']) { moveX += fx;  moveZ += fz;  }
+    if (teclas['s']) { moveX -= fx;  moveZ -= fz;  }
+    if (teclas['d']) { moveX -= fz;  moveZ += fx;  }
+    if (teclas['a']) { moveX += fz;  moveZ -= fx;  }
+
+    float moveLen = sqrt(moveX * moveX + moveZ * moveZ);
+    if (moveLen > 0.0f) {
+        float velocidade = 0.08f;
+        mover((moveX / moveLen) * velocidade, (moveZ / moveLen) * velocidade);
+    }
+}
+
 void teclado(unsigned char key, int x_mouse, int y_mouse){
-    float len = sqrt(dirX*dirX + dirZ*dirZ);
-    float fx = dirX / len, fz = dirZ / len;   // sem perder velocidade ao olhar para cima/baixo
-    float velocidade = 0.2f;
-    switch(tolower(key)){
-        case 'w': mover( fx*velocidade,  fz*velocidade); break;
-        case 's': mover(-fx*velocidade, -fz*velocidade); break;
-        case 'd': mover(-fz*velocidade,  fx*velocidade); break;
-        case 'a': mover( fz*velocidade, -fx*velocidade); break;
+    unsigned char k = tolower(key);
+    teclas[k] = true;
+
+    switch(k){
         case 'h': mostraHUD = !mostraHUD; break;
         case 'r': {
             float dist = sqrt(pow(camX, 2) + pow(camZ + 4.0f, 2));

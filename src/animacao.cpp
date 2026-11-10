@@ -3,8 +3,8 @@
 #include <math.h>
 #include "animacao.h"
 #include "estado.h"
+#include "entrada.h"
 
-// ======================= ANIMACAO SUAVE =======================
 // ======================= ANIMACAO SUAVE =======================
 float aproxima(float a, float alvo, float vel) {
     if (fabsf(alvo - a) <= vel) return alvo;
@@ -12,6 +12,8 @@ float aproxima(float a, float alvo, float vel) {
 }
 
 void atualiza(int) {
+    atualizaMovimento();
+
     anguloPorta   = aproxima(anguloPorta,   anguloPortaAlvo,   3.0f);
     gavetaX       = aproxima(gavetaX,       gavetaAlvo,        0.04f);
     cortinaPos    = aproxima(cortinaPos,    cortinaAlvo,       0.03f);
